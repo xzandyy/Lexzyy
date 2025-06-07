@@ -249,49 +249,47 @@ const MemoizedMarkdownChunk = memo(({ content }: { content: string }) => {
 MemoizedMarkdownChunk.displayName = "MemoizedMarkdownChunk";
 
 // 经典文本分块算法
-function splitContentIntoChunks(content: string, chunkSize: number = 200): string[] {
+function splitContentIntoChunks(content: string, chunkSize: number): string[] {
   if (content.length <= chunkSize) {
     return [content];
   }
 
-  // 首先按段落分割（双换行符）
-  const paragraphs = content.split("\n\n");
+  // 按Markdown元素分块
+  const elements = parseMarkdownElements(content);
   const chunks: string[] = [];
   let currentChunk = "";
+  let currentElements: string[] = [];
 
-  for (const paragraph of paragraphs) {
-    const paragraphWithBreak = paragraph + "\n\n";
+  for (const element of elements) {
+    const elementWithNewline = element + "\n\n";
+    const isCodeBlock = element.trim().startsWith("```");
 
-    // 如果当前段落本身就超过chunk大小，需要进一步分割
-    if (paragraph.length > chunkSize) {
-      // 先保存当前累积的内容
+    // 代码块独立作为一个chunk
+    if (isCodeBlock) {
+      // 先保存当前积累的内容
       if (currentChunk.trim()) {
         chunks.push(currentChunk.trim());
         currentChunk = "";
+        currentElements = [];
       }
-
-      // 对超长段落按句子分割
-      const sentences = paragraph.split(/(?<=\.)\s+/);
-      for (const sentence of sentences) {
-        if (currentChunk.length + sentence.length + 2 > chunkSize && currentChunk.trim()) {
-          chunks.push(currentChunk.trim());
-          currentChunk = sentence + " ";
-        } else {
-          currentChunk += sentence + " ";
-        }
-      }
+      // 代码块单独作为一个chunk
+      chunks.push(element);
     } else {
-      // 检查添加这个段落是否会超过chunk大小
-      if (currentChunk.length + paragraphWithBreak.length > chunkSize && currentChunk.trim()) {
+      // 检查添加当前元素是否会超出chunk大小
+      if (currentChunk.length + elementWithNewline.length > chunkSize && currentElements.length > 0) {
+        // 当前积累的元素作为一个chunk
         chunks.push(currentChunk.trim());
-        currentChunk = paragraphWithBreak;
+        currentChunk = elementWithNewline;
+        currentElements = [element];
       } else {
-        currentChunk += paragraphWithBreak;
+        // 继续累加元素
+        currentChunk += elementWithNewline;
+        currentElements.push(element);
       }
     }
   }
 
-  // 添加最后的内容块
+  // 添加最后的chunk
   if (currentChunk.trim()) {
     chunks.push(currentChunk.trim());
   }
@@ -299,12 +297,67 @@ function splitContentIntoChunks(content: string, chunkSize: number = 200): strin
   return chunks.length > 0 ? chunks : [content];
 }
 
-export default function MarkdownRenderer({
-  content,
-  className = "",
-  isStreaming = false,
-  chunkSize = 200, // 小分段，快速响应
-}: MarkdownRendererProps) {
+// 解析Markdown元素的实现
+function parseMarkdownElements(content: string): string[] {
+  const lines = content.split("\n");
+  const elements: string[] = [];
+  let currentElement = "";
+  let inCodeBlock = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // 检测代码块
+    if (line.startsWith("```")) {
+      if (inCodeBlock) {
+        // 代码块结束
+        currentElement += line;
+        elements.push(currentElement);
+        currentElement = "";
+        inCodeBlock = false;
+      } else {
+        // 保存之前的元素
+        if (currentElement.trim()) {
+          elements.push(currentElement.trim());
+        }
+        // 代码块开始
+        currentElement = line + "\n";
+        inCodeBlock = true;
+      }
+    } else if (inCodeBlock) {
+      // 在代码块内
+      currentElement += line + "\n";
+    } else {
+      // 检测元素边界
+      const isNewElement =
+        line.match(/^#{1,6}\s/) || // 标题
+        line.match(/^\s*[-*+]\s/) || // 无序列表
+        line.match(/^\s*\d+\.\s/) || // 有序列表
+        line.match(/^\s*>\s/) || // 引用
+        line.match(/^\s*\|.*\|/) || // 表格
+        line.match(/^---+\s*$/) || // 分隔线
+        (line.trim() === "" && currentElement.trim() !== ""); // 空行分割
+
+      if (isNewElement && currentElement.trim()) {
+        // 保存当前元素，开始新元素
+        elements.push(currentElement.trim());
+        currentElement = line + "\n";
+      } else if (line.trim() !== "" || currentElement.trim() !== "") {
+        // 继续当前元素（跳过连续空行）
+        currentElement += line + "\n";
+      }
+    }
+  }
+
+  // 添加最后的元素
+  if (currentElement.trim()) {
+    elements.push(currentElement.trim());
+  }
+
+  return elements.filter((element) => element.trim());
+}
+
+export default function MarkdownRenderer({ content, className = "", isStreaming = true, chunkSize = 100 }: MarkdownRendererProps) {
   // 性能优化：分段渲染策略
   const renderedContent = useMemo(() => {
     // 如果内容较短或不是流式模式，直接渲染
