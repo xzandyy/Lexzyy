@@ -1,0 +1,26 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "@xyflow/react/dist/style.css";
+import "./globals.css";
+
+const inter = Inter({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "FryChic",
+  description: "An AI assistant.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${inter.variable} antialiased overflow-hidden`}>{children}</body>
+    </html>
+  );
+}
