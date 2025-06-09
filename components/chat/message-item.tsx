@@ -12,7 +12,7 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(function Messag
       <div className="flex justify-end">
         <div className="max-w-[70%] relative bg-gray-100 text-gray-800 rounded-3xl px-4 py-3">
           <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
-          <div ref={ref} className="absolute bottom-16"></div>
+          {ref && <div ref={ref} className="absolute bottom-16"></div>}
         </div>
       </div>
     );
