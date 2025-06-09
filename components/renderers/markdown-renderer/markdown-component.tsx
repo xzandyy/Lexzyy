@@ -60,7 +60,7 @@ const components: Components = {
     }
 
     return (
-      <pre className="my-4 rounded-lg overflow-hidden">
+      <pre className="my-4 rounded-lg overflow-x-auto">
         <SyntaxHighlighter
           style={vscDarkPlus}
           language={language}
@@ -70,7 +70,11 @@ const components: Components = {
             fontSize: "14px",
             lineHeight: "1.5",
             backgroundColor: "#2d3748",
+            whiteSpace: "pre",
+            wordWrap: "normal",
+            overflowWrap: "normal",
           }}
+          wrapLongLines={false}
         >
           {codeString}
         </SyntaxHighlighter>
@@ -78,7 +82,7 @@ const components: Components = {
     );
   },
   code: ({ children }) => {
-    return <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-sm">{children}</code>;
+    return <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-sm break-all">{children}</code>;
   },
   // quote
   blockquote: ({ children }) => (
@@ -133,7 +137,7 @@ const components: Components = {
   },
   // table
   table: ({ children }) => (
-    <div className="overflow-x-auto my-4">
+    <div className="overflow-x-auto my-4 max-w-full">
       <table className="min-w-full border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
         {children}
       </table>
