@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@xyflow/react/dist/style.css";
 import "./globals.css";
-import QueryProvider from "@/components/providers/QueryProvider";
+import QueryProvider from "@/components/providers/query-provider";
 
 const inter = Inter({
   variable: "--font-geist-sans",

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import MarkdownComponent from "./markdown-component";
-import useChunks from "./useChunks";
+import useChunks from "./use-chunks";
 
 const MarkdownRenderer = memo(function MarkdownRenderer({ content }: { content: string }) {
   const chunks = useChunks(content);
