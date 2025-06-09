@@ -1,4 +1,3 @@
-import { forwardRef } from "react";
 import MessageItem from "./message-item";
 import ErrorState from "./error-state";
 import EmptyState from "./empty-state";
@@ -11,22 +10,18 @@ interface ChatListProps {
   lastUserMessageRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-const ChatList = forwardRef<HTMLDivElement, ChatListProps>(function ChatList(
-  { messages, error, onRetry, lastUserMessageRef },
-  ref,
-) {
+export default function ChatList({ messages, error, onRetry, lastUserMessageRef }: ChatListProps) {
   return (
-    <div className="flex-1 overflow-y-auto" ref={ref}>
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="space-y-8 pt-4 pb-32">
+    <div className="flex-1 overflow-y-auto pt-6">
+      <div className="max-w-4xl mx-auto px-6">
+        <div className="space-y-8">
           {/* 消息列表 */}
           {messages.map((message, index) => (
-            <div key={message.id} className="group">
-              <MessageItem
-                message={message}
-                ref={index === messages.length - 1 && message.role === "user" ? lastUserMessageRef : undefined}
-              />
-            </div>
+            <MessageItem
+              key={message.id}
+              message={message}
+              ref={index === messages.length - 1 && message.role === "user" ? lastUserMessageRef : undefined}
+            />
           ))}
 
           {/* 错误信息 */}
@@ -34,10 +29,11 @@ const ChatList = forwardRef<HTMLDivElement, ChatListProps>(function ChatList(
 
           {/* 空状态 */}
           {messages.length === 0 && !error && <EmptyState />}
+
+          {/* 空白占位 */}
+          {messages.length > 2 && !error ? <div className="min-h-[70vh]"></div> : <div className="min-h-[20vh]"></div>}
         </div>
       </div>
     </div>
   );
-});
-
-export default ChatList;
+}

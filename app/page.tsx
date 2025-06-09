@@ -5,19 +5,13 @@ import { ChatHeader, ChatList, ChatInput, useScrollToUserMessage } from "@/compo
 
 export default function Home() {
   const { messages, input, handleInputChange, handleSubmit, status, error, reload, stop } = useChat();
-  const { messagesContainerRef, lastUserMessageRef } = useScrollToUserMessage(messages);
+  const { lastUserMessageRef } = useScrollToUserMessage(messages);
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
       <ChatHeader status={status} error={error} />
 
-      <ChatList
-        ref={messagesContainerRef}
-        messages={messages}
-        error={error}
-        onRetry={reload}
-        lastUserMessageRef={lastUserMessageRef}
-      />
+      <ChatList messages={messages} error={error} onRetry={reload} lastUserMessageRef={lastUserMessageRef} />
 
       <ChatInput
         input={input}

@@ -12,18 +12,15 @@ interface ChatInputProps {
 export default function ChatInput({ input, status, onInputChange, onSubmit, onStop, onReload }: ChatInputProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onInputChange(e);
-    if (!e.target.value) {
-      e.target.style.height = "40px";
-    } else {
-      e.target.style.height = "auto";
-      e.target.style.height = Math.min(e.target.scrollHeight, 184) + "px";
-    }
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 184) + "px";
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onSubmit(e);
+      (e.target as HTMLTextAreaElement).style.height = "40px";
     }
   };
 
