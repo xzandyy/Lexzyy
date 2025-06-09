@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@xyflow/react/dist/style.css";
 import "./globals.css";
+import QueryProvider from "@/components/providers/QueryProvider";
 
 const inter = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  fallback: ["system-ui", "arial"],
 });
 
 export const metadata: Metadata = {
@@ -20,7 +23,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased overflow-hidden`}>{children}</body>
+      <body className={`${inter.variable} antialiased overflow-hidden`}>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

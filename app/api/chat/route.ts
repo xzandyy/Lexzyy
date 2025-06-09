@@ -23,8 +23,8 @@ export async function POST(req: Request) {
     });
 
     const result = streamText({
-      // model: openrouter.chat("openai/gpt-4o-mini"),
-      model: openrouter.chat("anthropic/claude-3.5-sonnet"),
+      model: openrouter.chat("openai/gpt-4o-mini"),
+      // model: openrouter.chat("anthropic/claude-3.5-sonnet"),
       messages,
       temperature: 0.7,
       maxTokens: 2048,

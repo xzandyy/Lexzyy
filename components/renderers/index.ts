@@ -1,2 +1,2 @@
-export { default as MarkdownRenderer } from "./MarkdownRenderer";
-export { default as MermaidRenderer } from "./MermaidRenderer";
+export { default as MarkdownRenderer } from "./markdown-renderer";
+export { default as MermaidRenderer } from "./markdown-renderer/mermaid-renderer";

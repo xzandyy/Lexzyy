@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { Bot, AlertCircle, RotateCcw, Send, MessageCircle, Square } from "lucide-react";
-import MarkdownRenderer from "@/components/renderers/MarkdownRenderer";
+import { MarkdownRenderer } from "@/components/renderers";
 import { useEffect, useRef } from "react";
 
 export default function Home() {
