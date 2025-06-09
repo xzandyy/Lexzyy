@@ -94,7 +94,7 @@ export default function Home() {
                   >
                     {/* 消息内容 */}
                     <div className="max-w-[80%]">
-                      <div className="bg-gray-200 text-gray-900 rounded-3xl px-4 py-3">
+                      <div className="bg-gray-100 text-gray-800 rounded-3xl px-4 py-3">
                         <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
                       </div>
                     </div>
@@ -175,7 +175,6 @@ export default function Home() {
                   }}
                   placeholder="发送消息给 Frychic..."
                   className="w-full pt-3 pb-1 min-h-[40px] focus:outline-none resize-none text-gray-800"
-                  disabled={status === "streaming"}
                   rows={1}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
