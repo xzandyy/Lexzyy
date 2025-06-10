@@ -13,7 +13,7 @@ interface ChatListProps {
 export default function ChatList({ messages, error, onRetry, lastUserMessageRef }: ChatListProps) {
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden pt-4">
-      <div className="max-w-3xl mx-auto px-8">
+      <div className="max-w-4xl mx-auto px-6">
         <div className="space-y-8">
           {/* 消息列表 */}
           {messages.map((message, index) => (
