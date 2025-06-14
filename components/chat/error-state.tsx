@@ -18,9 +18,9 @@ export default function ErrorState({ error, onRetry }: ErrorStateProps) {
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <div className="flex items-center space-x-2 text-gray-800 font-medium mb-2">
               <AlertCircle className="w-4 h-4" />
-              <span>连接失败</span>
+              <span>发生错误</span>
             </div>
-            <div className="text-gray-700 text-sm mb-3">{error.message || "未知错误，请检查网络连接"}</div>
+            <div className="text-gray-700 text-sm mb-3">{error.message || "未知错误"}</div>
             <button
               onClick={onRetry}
               className="flex items-center space-x-2 px-3 py-1.5 bg-black text-white rounded-md hover:bg-gray-800 text-sm transition-colors"
