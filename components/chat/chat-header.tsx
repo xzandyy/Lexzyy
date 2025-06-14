@@ -11,7 +11,7 @@ export default function ChatHeader({ status }: ChatHeaderProps) {
       <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Bot className="w-6 h-6 text-gray-700" />
-          <h1 className="text-lg font-semibold text-gray-900">Frychic</h1>
+          <h1 className="text-lg font-semibold text-gray-900">Lexzyy</h1>
         </div>
         <div className="flex items-center space-x-2 text-sm text-gray-500">
           {(status === "streaming" || status === "submitted") && (

@@ -32,7 +32,7 @@ export default function ChatInput({ input, status, onInputChange, onSubmit, onSt
             {/* 输入框区域 */}
             <div className="px-4 py-1">
               <textarea
-                placeholder="发送消息给 Frychic..."
+                placeholder="发送消息给 Lexzyy..."
                 className="w-full pt-3 pb-1 min-h-[40px] focus:outline-none resize-none text-gray-800"
                 rows={1}
                 value={input}
