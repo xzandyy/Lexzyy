@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 export default function LeftSidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <motion.div
