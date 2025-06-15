@@ -1,19 +1,26 @@
 import { RefreshCcw, Send, Square, Paperclip, X, FileText, ImageIcon } from "lucide-react";
-import { useRef, useState } from "react";
-import { useChat } from "@ai-sdk/react";
+import { UseAttachmentsReturn } from "@/hooks/use-attachments";
 
 interface ChatInputProps {
-  input: ReturnType<typeof useChat>["input"];
-  status: ReturnType<typeof useChat>["status"];
-  onInputChange: ReturnType<typeof useChat>["handleInputChange"];
-  onSubmit: ReturnType<typeof useChat>["handleSubmit"];
-  onStop: ReturnType<typeof useChat>["stop"];
-  onReload: ReturnType<typeof useChat>["reload"];
+  input: string;
+  status: "submitted" | "streaming" | "ready" | "error";
+  onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onSubmit: (e: React.FormEvent, options?: { experimental_attachments?: FileList }) => void;
+  onStop: () => void;
+  onReload: () => void;
+  attachments: UseAttachmentsReturn;
 }
 
-export default function ChatInput({ input, status, onInputChange, onSubmit, onStop, onReload }: ChatInputProps) {
-  const [files, setFiles] = useState<FileList | undefined>(undefined);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export default function ChatInput({
+  input,
+  status,
+  onInputChange,
+  onSubmit,
+  onStop,
+  onReload,
+  attachments,
+}: ChatInputProps) {
+  const { files, removeFile, clearAllFiles, fileInputRef, handleFileSelect } = attachments;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onInputChange(e);
@@ -33,37 +40,7 @@ export default function ChatInput({ input, status, onInputChange, onSubmit, onSt
     onSubmit(e, {
       experimental_attachments: files,
     });
-
-    // 清理文件选择
-    setFiles(undefined);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFiles(e.target.files);
-    }
-  };
-
-  const removeFile = (indexToRemove: number) => {
-    if (!files) return;
-
-    const dt = new DataTransfer();
-    for (let i = 0; i < files.length; i++) {
-      if (i !== indexToRemove) {
-        dt.items.add(files[i]);
-      }
-    }
-    setFiles(dt.files.length > 0 ? dt.files : undefined);
-  };
-
-  const clearAllFiles = () => {
-    setFiles(undefined);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    clearAllFiles();
   };
 
   const getFileIcon = (file: File) => {
@@ -134,20 +111,13 @@ export default function ChatInput({ input, status, onInputChange, onSubmit, onSt
               <div className="flex items-center justify-between">
                 {/* 左侧区域 - 附件按钮 */}
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    multiple
-                    accept="image/*,text/*,.pdf"
-                    className="hidden"
-                  />
+                  <input type="file" ref={fileInputRef} onChange={handleFileSelect} multiple className="hidden" />
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={status !== "ready"}
                     className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="添加附件 (支持图片、文本文件、PDF)"
+                    title="添加附件"
                   >
                     <Paperclip className="w-5 h-5" />
                   </button>
@@ -176,7 +146,7 @@ export default function ChatInput({ input, status, onInputChange, onSubmit, onSt
                   {status === "error" && (
                     <button
                       type="button"
-                      onClick={() => onReload()}
+                      onClick={onReload}
                       className="flex items-center space-x-2 p-3 bg-black hover:bg-gray-800 text-white rounded-full transition-all duration-200"
                     >
                       <RefreshCcw className="w-4 h-4" />
