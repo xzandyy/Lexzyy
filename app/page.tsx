@@ -1,7 +1,6 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import ChatHeader from "@/components/chat-header";
 import ChatList from "@/components/chat-list";
 import ChatInput from "@/components/chat-input";
 import LeftSidebar from "@/components/left-sidebar";
@@ -18,8 +17,6 @@ export default function Home() {
 
       {/* 主聊天区域 */}
       <div className="pl-14 flex-1 flex flex-col min-w-0">
-        <ChatHeader status={status} error={error} />
-
         <ChatList messages={messages} error={error} onRetry={reload} lastUserMessageRef={lastUserMessageRef} />
 
         <ChatInput
