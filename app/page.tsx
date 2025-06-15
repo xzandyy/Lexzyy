@@ -1,7 +1,11 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { ChatHeader, ChatList, ChatInput, useScrollToUserMessage, LeftSidebar } from "@/components/chat";
+import ChatHeader from "@/components/chat-header";
+import ChatList from "@/components/chat-list";
+import ChatInput from "@/components/chat-input";
+import LeftSidebar from "@/components/left-sidebar";
+import useScrollToUserMessage from "@/hooks/use-scroll-to-user-message";
 
 export default function Home() {
   const { messages, input, handleInputChange, handleSubmit, status, error, reload, stop } = useChat();

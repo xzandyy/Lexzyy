@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { UIMessage } from "ai";
 
-export function useScrollToUserMessage(messages: UIMessage[]) {
+export default function useScrollToUserMessage(messages: UIMessage[]) {
   const lastUserMessageRef = useRef<HTMLDivElement>(null);
 
   const scrollToUserMessage = () => {
