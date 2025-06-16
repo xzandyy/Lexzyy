@@ -1,4 +1,4 @@
-import { RefreshCcw, Send, Square, Paperclip, X, FileText, ImageIcon } from "lucide-react";
+import { RefreshCcw, Send, Square, Paperclip, X, FileText, ImageIcon, Loader2, AlertCircle } from "lucide-react";
 import { UseAttachmentsReturn } from "@/hooks/use-attachments";
 
 interface ChatInputProps {
@@ -20,7 +20,16 @@ export default function ChatInput({
   onReload,
   attachments,
 }: ChatInputProps) {
-  const { files, removeFile, clearAllFiles, fileInputRef, handleFileSelect } = attachments;
+  const {
+    files,
+    removeFile,
+    retryFile,
+    clearAllFiles,
+    fileInputRef,
+    handleFileSelect,
+    hasLoadingFiles,
+    getFileListForSubmit,
+  } = attachments;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onInputChange(e);
@@ -37,14 +46,15 @@ export default function ChatInput({
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
+    const fileList = getFileListForSubmit();
     onSubmit(e, {
-      experimental_attachments: files,
+      experimental_attachments: fileList,
     });
     clearAllFiles();
   };
 
-  const getFileIcon = (file: File) => {
-    if (file.type.startsWith("image/")) {
+  const getFileIcon = (originalType: string) => {
+    if (originalType.startsWith("image/")) {
       return <ImageIcon className="w-4 h-4" />;
     }
     return <FileText className="w-4 h-4" />;
@@ -58,6 +68,19 @@ export default function ChatInput({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
 
+  const getStatusColor = (fileStatus: string) => {
+    switch (fileStatus) {
+      case "success":
+        return "bg-green-100 border-green-200";
+      case "loading":
+        return "bg-blue-100 border-blue-200";
+      case "error":
+        return "bg-red-100 border-red-200";
+      default:
+        return "bg-gray-100 border-gray-200";
+    }
+  };
+
   const hasFiles = files && files.length > 0;
 
   return (
@@ -69,14 +92,34 @@ export default function ChatInput({
             {hasFiles && (
               <div className="px-4 pt-3 border-b border-gray-100">
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {Array.from(files).map((file, index) => (
-                    <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2 text-sm">
-                      {getFileIcon(file)}
-                      <span className="text-gray-700 max-w-[150px] truncate">{file.name}</span>
-                      <span className="text-gray-500 text-xs">({formatFileSize(file.size)})</span>
+                  {files.map((file) => (
+                    <div
+                      key={file.id}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm border ${getStatusColor(file.status)}`}
+                    >
+                      {getFileIcon(file.originalType)}
+                      <span className="text-gray-700 max-w-[150px] truncate">{file.originalName}</span>
+                      <span className="text-gray-500 text-xs">({formatFileSize(file.file.size)})</span>
+
+                      {/* 状态指示器 */}
+                      {file.status === "loading" && <Loader2 className="w-3 h-3 animate-spin text-blue-500" />}
+                      {file.status === "error" && (
+                        <div className="flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 text-red-500" />
+                          <button
+                            type="button"
+                            onClick={() => retryFile(file.id)}
+                            className="text-xs text-red-600 hover:text-red-800 underline"
+                            title={file.error || "重试"}
+                          >
+                            重试
+                          </button>
+                        </div>
+                      )}
+
                       <button
                         type="button"
-                        onClick={() => removeFile(index)}
+                        onClick={() => removeFile(file.id)}
                         className="text-gray-400 hover:text-gray-600 ml-1"
                       >
                         <X className="w-3 h-3" />
@@ -84,13 +127,20 @@ export default function ChatInput({
                     </div>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={clearAllFiles}
-                  className="text-xs text-gray-500 hover:text-gray-700 mb-2"
-                >
-                  清除所有文件
-                </button>
+
+                {/* 文件操作按钮 */}
+                <div className="flex items-center justify-between mb-2">
+                  <button type="button" onClick={clearAllFiles} className="text-xs text-gray-500 hover:text-gray-700">
+                    清除所有文件
+                  </button>
+
+                  {hasLoadingFiles && (
+                    <span className="text-xs text-blue-600 flex items-center gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      正在处理文件...
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -137,8 +187,9 @@ export default function ChatInput({
                   {status === "ready" && (
                     <button
                       type="submit"
-                      disabled={!input.trim()}
+                      disabled={!input.trim() || hasLoadingFiles}
                       className="flex items-center space-x-2 p-3 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-full transition-all duration-200"
+                      title={hasLoadingFiles ? "等待文件处理完成" : "发送消息"}
                     >
                       <Send className="w-4 h-4" />
                     </button>

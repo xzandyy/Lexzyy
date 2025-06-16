@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "@xyflow/react/dist/style.css";
 import "./globals.css";
 import QueryProvider from "@/components/providers/query-provider";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -24,7 +25,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased overflow-hidden`}>
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          {children}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: "#363636",
+                color: "#fff",
+                fontSize: "14px",
+                borderRadius: "8px",
+              },
+            }}
+          />
+        </QueryProvider>
       </body>
     </html>
   );
