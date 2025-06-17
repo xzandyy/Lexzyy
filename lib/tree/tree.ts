@@ -60,6 +60,13 @@ export class Tree<T = unknown> {
   }
 
   /**
+   * 判断节点是否存在
+   */
+  hasNode(nodeId: string): boolean {
+    return this.nodeMap.has(nodeId);
+  }
+
+  /**
    * 删除节点及其子树
    */
   removeNode(nodeId: string): boolean {
@@ -278,6 +285,43 @@ export class Tree<T = unknown> {
       result.push(node.data);
     });
     return result;
+  }
+
+  /**
+   * 修剪树结构，保留从指定节点到根的唯一路径
+   * 向上只保留一条线路，向下保持原有的所有分支
+   */
+  pruneToPath(nodeId: string): boolean {
+    const targetNode = this.nodeMap.get(nodeId);
+    if (!targetNode) {
+      return false; // 节点不存在
+    }
+
+    // 获取从目标节点到根的路径
+    const pathToRoot = this.getPathToNode(nodeId);
+    if (pathToRoot.length === 0) {
+      return false;
+    }
+
+    // 从路径的第二个节点开始（跳过根节点），删除每个节点的兄弟节点
+    for (let i = 1; i < pathToRoot.length; i++) {
+      const currentNode = pathToRoot[i] as TreeNodeImpl<T>;
+      const parentNode = currentNode.parent as TreeNodeImpl<T>;
+
+      if (parentNode) {
+        // 获取所有兄弟节点（除了当前路径节点）
+        const siblings = parentNode.children.filter((child) => child.id !== currentNode.id);
+
+        // 删除所有兄弟节点及其子树
+        for (const sibling of siblings) {
+          this.removeNodeFromMap(sibling);
+          const parentImpl = parentNode as TreeNodeImpl<T>;
+          parentImpl.removeChild(sibling.id);
+        }
+      }
+    }
+
+    return true;
   }
 
   /**

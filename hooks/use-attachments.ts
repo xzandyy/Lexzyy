@@ -141,6 +141,12 @@ export default function useAttachments(): UseAttachmentsReturn {
   const onDragEnter = useCallback((e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // 检查是否包含文件，只有拖拽文件时才响应
+    if (!e.dataTransfer?.types?.includes("Files")) {
+      return;
+    }
+
     dragCounterRef.current++;
     if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
       setIsDragOver(true);
@@ -150,6 +156,12 @@ export default function useAttachments(): UseAttachmentsReturn {
   const onDragLeave = useCallback((e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // 检查是否包含文件，只有拖拽文件时才响应
+    if (!e.dataTransfer?.types?.includes("Files")) {
+      return;
+    }
+
     dragCounterRef.current--;
     if (dragCounterRef.current === 0) {
       setIsDragOver(false);
@@ -159,12 +171,23 @@ export default function useAttachments(): UseAttachmentsReturn {
   const onDragOver = useCallback((e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // 检查是否包含文件，只有拖拽文件时才响应
+    if (!e.dataTransfer?.types?.includes("Files")) {
+      return;
+    }
   }, []);
 
   const onDrop = useCallback(
     (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
+
+      // 检查是否包含文件，只有拖拽文件时才响应
+      if (!e.dataTransfer?.types?.includes("Files")) {
+        return;
+      }
+
       setIsDragOver(false);
       dragCounterRef.current = 0;
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {

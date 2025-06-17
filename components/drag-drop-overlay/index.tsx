@@ -14,7 +14,7 @@ export default function DragDropOverlay({ isVisible }: DragDropOverlayProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-blue-50 bg-opacity-80 backdrop-blur-sm"
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-blue-50 bg-opacity-80 backdrop-blur-sm"
           style={{ pointerEvents: "none" }}
         >
           <motion.div
