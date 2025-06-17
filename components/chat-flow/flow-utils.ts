@@ -22,7 +22,7 @@ export function generateLayoutedElements(tree: Tree<UIMessage>, styleConfig: Sty
     nodes.push(createNodeFromTreeNode(treeNode as TreeNodeImpl<UIMessage>, indexInLevel, depth, styleConfig));
 
     if (treeNode.parent) {
-      edges.push(createEdgeFromTreeNode(treeNode as TreeNodeImpl<UIMessage>));
+      edges.push(createEdgeFromTreeNode(treeNode as TreeNodeImpl<UIMessage>, styleConfig));
     }
   });
 
@@ -74,7 +74,7 @@ export function createNodeFromTreeNode(
   };
 }
 
-export function createEdgeFromTreeNode(treeNode: TreeNodeImpl<UIMessage>): Edge {
+export function createEdgeFromTreeNode(treeNode: TreeNodeImpl<UIMessage>, styleConfig: StyleConfig): Edge {
   const role = treeNode.data.role as keyof typeof NODE_ROLE_CONFIG;
   const color = NODE_ROLE_CONFIG[role]?.edgeColor || DEFAULT_EDGE_COLOR;
 
@@ -82,10 +82,10 @@ export function createEdgeFromTreeNode(treeNode: TreeNodeImpl<UIMessage>): Edge 
     id: `${treeNode.parent!.id}-${treeNode.id}`,
     source: treeNode.parent!.id,
     target: treeNode.id,
-    type: "smoothstep",
-    animated: false,
+    type: styleConfig.edgeType,
+    animated: styleConfig.edgeAnimated,
     style: {
-      strokeWidth: 2,
+      strokeWidth: styleConfig.edgeWidth,
       stroke: color,
     },
   };

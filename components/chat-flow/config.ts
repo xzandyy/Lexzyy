@@ -57,6 +57,28 @@ export const STYLE_CONFIG_OPTIONS = {
     label: "最大字符数",
     unit: "字符",
   },
+  edgeWidth: {
+    min: 1,
+    max: 10,
+    step: 0.5,
+    default: 2,
+    label: "连线宽度",
+    unit: "px",
+  },
+  edgeType: {
+    options: [
+      { value: "bezier", label: "贝塞尔曲线" },
+      { value: "straight", label: "直线" },
+      { value: "step", label: "阶梯" },
+      { value: "smoothstep", label: "平滑阶梯" },
+    ],
+    default: "bezier",
+    label: "连线类型",
+  },
+  edgeAnimated: {
+    default: false,
+    label: "连线动画",
+  },
 } as const;
 
 export const CONFIG_GROUPS = {
@@ -72,6 +94,10 @@ export const CONFIG_GROUPS = {
     title: "文字样式",
     options: ["fontSize", "lineHeight", "maxCharacters"] as const,
   },
+  edges: {
+    title: "连线样式",
+    options: ["edgeWidth", "edgeType", "edgeAnimated"] as const,
+  },
 } as const;
 
 export const DEFAULT_STYLE_CONFIG = {
@@ -82,6 +108,9 @@ export const DEFAULT_STYLE_CONFIG = {
   fontSize: STYLE_CONFIG_OPTIONS.fontSize.default,
   lineHeight: STYLE_CONFIG_OPTIONS.lineHeight.default,
   maxCharacters: STYLE_CONFIG_OPTIONS.maxCharacters.default,
+  edgeWidth: STYLE_CONFIG_OPTIONS.edgeWidth.default,
+  edgeType: STYLE_CONFIG_OPTIONS.edgeType.default,
+  edgeAnimated: STYLE_CONFIG_OPTIONS.edgeAnimated.default,
 } satisfies StyleConfig;
 
 export const NODE_ROLE_CONFIG = {

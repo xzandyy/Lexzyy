@@ -11,7 +11,7 @@ interface StyleConfigPanelProps {
 export function StyleConfigPanel({ styleConfig, onStyleConfigChange }: StyleConfigPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleConfigChange = (key: keyof StyleConfig, value: number) => {
+  const handleConfigChange = (key: keyof StyleConfig, value: number | string | boolean) => {
     onStyleConfigChange({
       ...styleConfig,
       [key]: value,
@@ -20,6 +20,72 @@ export function StyleConfigPanel({ styleConfig, onStyleConfigChange }: StyleConf
 
   const resetToDefault = () => {
     onStyleConfigChange(DEFAULT_STYLE_CONFIG);
+  };
+
+  const renderConfigOption = (optionKey: keyof typeof STYLE_CONFIG_OPTIONS) => {
+    const option = STYLE_CONFIG_OPTIONS[optionKey];
+    const value = styleConfig[optionKey];
+
+    // 数值滑块配置
+    if ("min" in option && "max" in option) {
+      const displayValue = option.step < 1 ? Number(value).toFixed(1) : value;
+      return (
+        <div key={optionKey}>
+          <label className="block text-xs text-gray-500 mb-1">
+            {option.label}: {displayValue}
+            {option.unit}
+          </label>
+          <input
+            type="range"
+            min={option.min}
+            max={option.max}
+            step={option.step}
+            value={value as number}
+            onChange={(e) => handleConfigChange(optionKey, Number(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
+      );
+    }
+
+    // 选择框配置
+    if ("options" in option) {
+      return (
+        <div key={optionKey}>
+          <label className="block text-xs text-gray-500 mb-1">{option.label}</label>
+          <select
+            value={value as string}
+            onChange={(e) => handleConfigChange(optionKey, e.target.value)}
+            className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {option.options.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
+    // 复选框配置
+    if (typeof option.default === "boolean") {
+      return (
+        <div key={optionKey}>
+          <label className="flex items-center text-xs text-gray-500">
+            <input
+              type="checkbox"
+              checked={value as boolean}
+              onChange={(e) => handleConfigChange(optionKey, e.target.checked)}
+              className="mr-2 w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            />
+            {option.label}
+          </label>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -63,31 +129,7 @@ export function StyleConfigPanel({ styleConfig, onStyleConfigChange }: StyleConf
                 {Object.entries(CONFIG_GROUPS).map(([groupKey, group]) => (
                   <div key={groupKey}>
                     <h4 className="text-xs font-medium text-gray-700 mb-2">{group.title}</h4>
-                    <div className="space-y-2">
-                      {group.options.map((optionKey) => {
-                        const option = STYLE_CONFIG_OPTIONS[optionKey];
-                        const value = styleConfig[optionKey];
-                        const displayValue = option.step < 1 ? Number(value).toFixed(1) : value;
-
-                        return (
-                          <div key={optionKey}>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              {option.label}: {displayValue}
-                              {option.unit}
-                            </label>
-                            <input
-                              type="range"
-                              min={option.min}
-                              max={option.max}
-                              step={option.step}
-                              value={value}
-                              onChange={(e) => handleConfigChange(optionKey, Number(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <div className="space-y-2">{group.options.map((optionKey) => renderConfigOption(optionKey))}</div>
                   </div>
                 ))}
               </div>

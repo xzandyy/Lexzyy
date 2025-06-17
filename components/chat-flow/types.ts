@@ -16,6 +16,9 @@ export interface StyleConfig {
   fontSize: number;
   lineHeight: number;
   maxCharacters: number;
+  edgeWidth: number;
+  edgeType: "bezier" | "straight" | "step" | "smoothstep";
+  edgeAnimated: boolean;
 }
 
 export type { UIMessage };
