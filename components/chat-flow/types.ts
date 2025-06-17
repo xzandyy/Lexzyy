@@ -17,7 +17,7 @@ export interface StyleConfig {
   lineHeight: number;
   maxCharacters: number;
   edgeWidth: number;
-  edgeType: "bezier" | "straight" | "step" | "smoothstep";
+  edgeType: "default" | "simplebezier" | "straight" | "step" | "smoothstep";
   edgeAnimated: boolean;
 }
 

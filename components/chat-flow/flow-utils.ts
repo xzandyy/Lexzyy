@@ -5,26 +5,111 @@ import { UIMessage } from "./types";
 import { NODE_ROLE_CONFIG, DEFAULT_EDGE_COLOR } from "./config";
 
 export function generateLayoutedElements(tree: Tree<UIMessage>, styleConfig: StyleConfig) {
+  if (tree.isEmpty()) {
+    return { nodes: [], edges: [] };
+  }
+
+  const { horizontalSpacing, verticalSpacing } = styleConfig;
+  const subtreeWidths = new Map<string, number>();
   const nodes: Node<ChatNodeData>[] = [];
   const edges: Edge[] = [];
 
-  let currentDepth = -1;
-  let indexInLevel = -1;
+  // 第一次遍历：后序计算子树宽度
+  tree.postorderTraversal((treeNode) => {
+    const nodeImpl = treeNode as TreeNodeImpl<UIMessage>;
 
-  tree.levelOrderTraversal((treeNode, depth) => {
-    if (depth !== currentDepth) {
-      currentDepth = depth;
-      indexInLevel = 0;
+    if (nodeImpl.children.length === 0) {
+      subtreeWidths.set(nodeImpl.id, 1);
     } else {
-      indexInLevel++;
-    }
-
-    nodes.push(createNodeFromTreeNode(treeNode as TreeNodeImpl<UIMessage>, indexInLevel, depth, styleConfig));
-
-    if (treeNode.parent) {
-      edges.push(createEdgeFromTreeNode(treeNode as TreeNodeImpl<UIMessage>, styleConfig));
+      const totalWidth = nodeImpl.children.reduce((sum, child) => {
+        return sum + (subtreeWidths.get(child.id) || 1);
+      }, 0);
+      subtreeWidths.set(nodeImpl.id, totalWidth);
     }
   });
+
+  // 第二次遍历：前序计算位置并收集节点和边
+  const root = tree.getRoot();
+  if (root) {
+    const rootImpl = root as TreeNodeImpl<UIMessage>;
+    const totalWidth = subtreeWidths.get(rootImpl.id) || 1;
+
+    const stack = [
+      {
+        node: rootImpl,
+        left: 0,
+        right: totalWidth,
+        depth: 0,
+      },
+    ];
+
+    while (stack.length > 0) {
+      const { node: nodeImpl, left, right, depth } = stack.pop()!;
+      const message = nodeImpl.data;
+
+      // 计算位置并创建节点
+      const centerX = (left + (right - left) / 2) * horizontalSpacing;
+      nodes.push({
+        id: message.id,
+        type: `${message.role}Node`,
+        position: { x: centerX, y: depth * verticalSpacing },
+        data: {
+          message,
+          label: formatMessageLabel(message, styleConfig),
+          role: message.role,
+          isRoot: nodeImpl.isRoot(),
+          isActive: false,
+        },
+        sourcePosition: Position.Bottom,
+        targetPosition: Position.Top,
+      });
+
+      // 创建边（如果有父节点）
+      if (nodeImpl.parent) {
+        const role = message.role as keyof typeof NODE_ROLE_CONFIG;
+        const color = NODE_ROLE_CONFIG[role]?.edgeColor || DEFAULT_EDGE_COLOR;
+
+        edges.push({
+          id: `${nodeImpl.parent.id}-${nodeImpl.id}`,
+          source: nodeImpl.parent.id,
+          target: nodeImpl.id,
+          type: styleConfig.edgeType,
+          animated: styleConfig.edgeAnimated,
+          style: {
+            strokeWidth: styleConfig.edgeWidth,
+            stroke: color,
+          },
+        });
+      }
+
+      // 为子节点添加到栈
+      if (nodeImpl.children.length > 0) {
+        const childStackItems = [];
+        let currentLeft = left;
+
+        // 正序计算子节点位置（从左到右）
+        for (let i = 0; i < nodeImpl.children.length; i++) {
+          const child = nodeImpl.children[i];
+          const childWidth = subtreeWidths.get(child.id) || 1;
+          const childRight = currentLeft + childWidth;
+
+          childStackItems.push({
+            node: child as TreeNodeImpl<UIMessage>,
+            left: currentLeft,
+            right: childRight,
+            depth: depth + 1,
+          });
+
+          currentLeft = childRight;
+        }
+
+        // 逆序添加到栈中（这样栈顶是最左边的子节点，符合前序遍历）
+        for (let i = childStackItems.length - 1; i >= 0; i--) {
+          stack.push(childStackItems[i]);
+        }
+      }
+    }
+  }
 
   return { nodes, edges };
 }
@@ -44,55 +129,6 @@ export function calculateTextLayoutMetrics(styleConfig: StyleConfig) {
     exactTextHeight,
     maxCompleteLines,
   };
-}
-
-export function createNodeFromTreeNode(
-  treeNode: TreeNodeImpl<UIMessage>,
-  indexInLevel: number,
-  depth: number,
-  styleConfig: StyleConfig,
-): Node<ChatNodeData> {
-  const message = treeNode.data;
-  const isRoot = treeNode.isRoot();
-
-  return {
-    id: message.id,
-    type: getNodeType(message.role),
-    position: {
-      x: indexInLevel * styleConfig.horizontalSpacing,
-      y: depth * styleConfig.verticalSpacing,
-    },
-    data: {
-      message,
-      label: formatMessageLabel(message, styleConfig),
-      role: message.role,
-      isRoot,
-      isActive: false,
-    },
-    sourcePosition: Position.Bottom,
-    targetPosition: Position.Top,
-  };
-}
-
-export function createEdgeFromTreeNode(treeNode: TreeNodeImpl<UIMessage>, styleConfig: StyleConfig): Edge {
-  const role = treeNode.data.role as keyof typeof NODE_ROLE_CONFIG;
-  const color = NODE_ROLE_CONFIG[role]?.edgeColor || DEFAULT_EDGE_COLOR;
-
-  return {
-    id: `${treeNode.parent!.id}-${treeNode.id}`,
-    source: treeNode.parent!.id,
-    target: treeNode.id,
-    type: styleConfig.edgeType,
-    animated: styleConfig.edgeAnimated,
-    style: {
-      strokeWidth: styleConfig.edgeWidth,
-      stroke: color,
-    },
-  };
-}
-
-export function getNodeType(role: string): string {
-  return `${role}Node`;
 }
 
 export function formatMessageLabel(message: UIMessage, styleConfig: StyleConfig): string {

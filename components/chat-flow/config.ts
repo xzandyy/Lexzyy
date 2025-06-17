@@ -67,12 +67,13 @@ export const STYLE_CONFIG_OPTIONS = {
   },
   edgeType: {
     options: [
-      { value: "bezier", label: "贝塞尔曲线" },
+      { value: "default", label: "默认" },
+      { value: "simplebezier", label: "贝塞尔曲线" },
       { value: "straight", label: "直线" },
       { value: "step", label: "阶梯" },
       { value: "smoothstep", label: "平滑阶梯" },
     ],
-    default: "bezier",
+    default: "default",
     label: "连线类型",
   },
   edgeAnimated: {
