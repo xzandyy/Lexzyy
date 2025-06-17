@@ -1,11 +1,10 @@
 import { LucideIcon, Menu } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { motion } from "framer-motion";
-import defaultConfig from "./config";
 
 export interface LeftSidebarProps {
-  defaultActiveTabId?: string;
-  tabs?: {
+  defaultActiveTabId: string;
+  tabs: {
     id: string;
     icon: LucideIcon;
     label: string;
@@ -13,10 +12,7 @@ export interface LeftSidebarProps {
   }[];
 }
 
-export default function LeftSidebar({
-  tabs = defaultConfig.tabs,
-  defaultActiveTabId = defaultConfig.defaultActiveTabId,
-}: LeftSidebarProps) {
+export default function LeftSidebar({ tabs, defaultActiveTabId }: LeftSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTabId, setActiveTabId] = useState<string | null>(defaultActiveTabId);
 
@@ -26,13 +22,13 @@ export default function LeftSidebar({
     <motion.div
       initial={false}
       animate={{
-        width: isCollapsed ? 56 : 400,
+        width: isCollapsed ? 56 : 4 * (14 + 96),
       }}
       transition={{
         duration: 0.2,
         ease: "easeInOut",
       }}
-      className="absolute left-0 top-0 bottom-0 bg-white border-r border-gray-200 h-full overflow-hidden flex z-100 shadow-sm"
+      className="bg-white border-r border-gray-200 h-full overflow-hidden flex z-100 shadow-sm"
     >
       <div className="h-full w-14 flex flex-col border-r border-gray-200 shadow-sm">
         {/* 展开/关闭 */}
@@ -74,11 +70,11 @@ export default function LeftSidebar({
       </div>
 
       {/* 功能面板区域 */}
-      <div className="flex flex-col h-full w-64">
+      <div className="flex flex-col h-full">
         <div className="h-12 border-b border-gray-200 flex items-center px-3">
           {currentItem && <h2 className="text-sm font-medium text-gray-900">{currentItem.label}</h2>}
         </div>
-        <div className="flex-1 min-h-0">{currentItem && currentItem.component}</div>
+        <div className="w-96 flex-1 min-h-0">{currentItem && currentItem.component}</div>
       </div>
     </motion.div>
   );

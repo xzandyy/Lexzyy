@@ -33,16 +33,24 @@ export class Tree<T = unknown> {
   }
 
   /**
-   * 添加节点
+   * 设置或添加节点
    */
-  addNode(parentId: string, nodeId: string, data: T): TreeNode<T> | null {
+  setNode(nodeId: string, data: T, parentId?: string): TreeNode<T> {
+    // 如果节点已存在,更新数据
+    const existingNode = this.nodeMap.get(nodeId);
+    if (existingNode) {
+      existingNode.data = data;
+      return existingNode;
+    }
+
+    // 添加新节点
+    if (!parentId) {
+      throw new Error(`新节点 ${nodeId} 需要指定父节点`);
+    }
+
     const parent = this.nodeMap.get(parentId);
     if (!parent) {
       throw new Error(`父节点 ${parentId} 不存在`);
-    }
-
-    if (this.nodeMap.has(nodeId)) {
-      throw new Error(`节点 ${nodeId} 已存在`);
     }
 
     const newNode = new TreeNodeImpl(nodeId, data, parent);

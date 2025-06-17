@@ -8,6 +8,8 @@ import DragDropOverlay from "@/components/drag-drop-overlay";
 import useScrollToUserMessage from "@/hooks/use-scroll-to-user-message";
 import useAttachments from "@/hooks/use-attachments";
 import ChatHeader from "@/components/chat-header";
+import { Network, History, Settings } from "lucide-react";
+import ChatFlow from "@/components/chat-flow";
 
 export default function Home() {
   const { messages, input, handleInputChange, handleSubmit, status, error, reload, stop } = useChat();
@@ -18,7 +20,29 @@ export default function Home() {
     <div className="h-screen w-screen flex overflow-hidden bg-white">
       <DragDropOverlay isVisible={attachments.isDragOver} />
 
-      <LeftSidebar />
+      <LeftSidebar
+        defaultActiveTabId="chat-flow"
+        tabs={[
+          {
+            id: "chat-flow",
+            icon: Network,
+            label: "对话流",
+            component: <ChatFlow messages={messages} status={status} />,
+          },
+          {
+            id: "history",
+            icon: History,
+            label: "历史记录",
+            component: undefined,
+          },
+          {
+            id: "settings",
+            icon: Settings,
+            label: "设置",
+            component: undefined,
+          },
+        ]}
+      />
 
       <div className="pl-14 flex-1 flex flex-col min-w-0">
         <ChatHeader status={status} />

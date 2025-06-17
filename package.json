@@ -31,7 +31,7 @@
     "@tanstack/react-query": "^5.80.6",
     "@types/pdf-parse": "^1.1.5",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@xyflow/react": "^12.6.4",
+    "@xyflow/react": "^12.7.0",
     "ai": "^4.3.16",
     "framer-motion": "^12.16.0",
     "lucide-react": "^0.513.0",
@@ -48,6 +48,7 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "tailwind-variants": "^1.0.0",
     "xlsx": "^0.18.5",
     "zod": "^3.25.36"
   },
