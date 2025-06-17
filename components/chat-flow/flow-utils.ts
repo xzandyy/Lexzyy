@@ -11,7 +11,7 @@ export function generateLayoutedElements(tree: Tree<UIMessage>, styleConfig: Sty
   let currentDepth = -1;
   let indexInLevel = -1;
 
-  tree.preorderTraversal((treeNode, depth) => {
+  tree.levelOrderTraversal((treeNode, depth) => {
     if (depth !== currentDepth) {
       currentDepth = depth;
       indexInLevel = 0;
@@ -67,6 +67,7 @@ export function createNodeFromTreeNode(
       label: formatMessageLabel(message, styleConfig),
       role: message.role,
       isRoot,
+      isActive: false,
     },
     sourcePosition: Position.Bottom,
     targetPosition: Position.Top,

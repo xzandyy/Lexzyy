@@ -12,9 +12,10 @@ import { useChat } from "@ai-sdk/react";
 interface ChatFlowProps {
   messages: UIMessage[];
   status: ReturnType<typeof useChat>["status"];
+  setMessages: (messages: UIMessage[]) => void;
 }
 
-export default function ChatFlow({ messages, status }: ChatFlowProps) {
+export default function ChatFlow({ messages, setMessages, status }: ChatFlowProps) {
   const [styleConfig, setStyleConfig] = useState<StyleConfig>(DEFAULT_STYLE_CONFIG);
   const chatTree = useRef<ChatTree | null>(null);
 
@@ -25,12 +26,33 @@ export default function ChatFlow({ messages, status }: ChatFlowProps) {
   const { nodes, edges } = useMemo(() => {
     chatTree.current!.updateFromMessages(messages, status);
     const result = generateLayoutedElements(chatTree.current!.tree, styleConfig);
-    return result;
+
+    const activeNodeId = messages.length > 0 ? messages[messages.length - 1].id : null;
+
+    const nodesWithActiveState = result.nodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        isActive: node.id === activeNodeId,
+      },
+    }));
+
+    return { nodes: nodesWithActiveState, edges: result.edges };
   }, [messages, status, styleConfig]);
 
   const onNodesChange = useCallback(() => {}, []);
 
   const onEdgesChange = useCallback(() => {}, []);
+
+  const onNodeClick = useCallback(
+    (_event: React.MouseEvent, node: { id: string }) => {
+      if (chatTree.current) {
+        const messagePath = chatTree.current.getMessagePath(node.id);
+        setMessages(messagePath);
+      }
+    },
+    [setMessages],
+  );
 
   const cssVariables = useMemo(() => {
     const textLayoutMetrics = calculateTextLayoutMetrics(styleConfig);
@@ -52,6 +74,7 @@ export default function ChatFlow({ messages, status }: ChatFlowProps) {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{

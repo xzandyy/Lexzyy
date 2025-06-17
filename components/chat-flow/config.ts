@@ -89,11 +89,15 @@ export const NODE_ROLE_CONFIG = {
     containerClasses: "bg-blue-50 border-blue-500",
     textClasses: "text-blue-700",
     edgeColor: "#1976d2",
+    activeContainerClasses: "bg-blue-100 border-blue-600 ring-2 ring-blue-300",
+    activeTextClasses: "text-blue-800",
   },
   assistant: {
     containerClasses: "bg-purple-50 border-purple-600",
     textClasses: "text-purple-700",
     edgeColor: "#7b1fa2",
+    activeContainerClasses: "bg-purple-100 border-purple-700 ring-2 ring-purple-300",
+    activeTextClasses: "text-purple-800",
   },
 } as const;
 

@@ -5,6 +5,7 @@ export interface ChatNodeData extends Record<string, unknown> {
   label: string;
   role: UIMessage["role"];
   isRoot: boolean;
+  isActive: boolean;
 }
 
 export interface StyleConfig {

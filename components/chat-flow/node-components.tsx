@@ -4,11 +4,18 @@ import { ChatNodeData } from "./types";
 import { NODE_ROLE_CONFIG, NODE_BASE_CLASSES } from "./config";
 
 export function ChatNodeComponent({ data }: { data: ChatNodeData }) {
-  const { role } = data;
+  const { role, isActive } = data;
 
-  const roleConfig = NODE_ROLE_CONFIG[role as keyof typeof NODE_ROLE_CONFIG];
-  const containerClasses = `${NODE_BASE_CLASSES.container} ${roleConfig?.containerClasses || ""}`;
-  const textClasses = `${NODE_BASE_CLASSES.text} ${roleConfig?.textClasses || ""}`;
+  let containerClasses = NODE_BASE_CLASSES.container;
+  let textClasses = NODE_BASE_CLASSES.text;
+
+  if (role === "user") {
+    containerClasses += ` ${isActive ? NODE_ROLE_CONFIG.user.activeContainerClasses : NODE_ROLE_CONFIG.user.containerClasses}`;
+    textClasses += ` ${isActive ? NODE_ROLE_CONFIG.user.activeTextClasses : NODE_ROLE_CONFIG.user.textClasses}`;
+  } else if (role === "assistant") {
+    containerClasses += ` ${isActive ? NODE_ROLE_CONFIG.assistant.activeContainerClasses : NODE_ROLE_CONFIG.assistant.containerClasses}`;
+    textClasses += ` ${isActive ? NODE_ROLE_CONFIG.assistant.activeTextClasses : NODE_ROLE_CONFIG.assistant.textClasses}`;
+  }
 
   return (
     <div
@@ -16,6 +23,8 @@ export function ChatNodeComponent({ data }: { data: ChatNodeData }) {
       style={{
         width: "var(--node-width)",
         height: "var(--node-height)",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
       }}
     >
       <Handle type="target" position={Position.Top} className="invisible" />

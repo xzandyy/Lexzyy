@@ -12,7 +12,7 @@ import { Network, History, Settings } from "lucide-react";
 import ChatFlow from "@/components/chat-flow";
 
 export default function Home() {
-  const { messages, input, handleInputChange, handleSubmit, status, error, reload, stop } = useChat();
+  const { messages, setMessages, input, handleInputChange, handleSubmit, status, error, reload, stop } = useChat();
   const { lastUserMessageRef } = useScrollToUserMessage(messages);
   const attachments = useAttachments();
 
@@ -27,7 +27,7 @@ export default function Home() {
             id: "chat-flow",
             icon: Network,
             label: "对话流",
-            component: <ChatFlow messages={messages} status={status} />,
+            component: <ChatFlow messages={messages} setMessages={setMessages} status={status} />,
           },
           {
             id: "history",

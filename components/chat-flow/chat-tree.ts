@@ -47,6 +47,11 @@ export class ChatTree {
     }
   }
 
+  getMessagePath(messageId: string): UIMessage[] {
+    const path = this.tree.getPathToNode(messageId);
+    return path.map((node) => node.data);
+  }
+
   private pruneToPath(nodeId: string): boolean {
     return this.tree.pruneToPath(nodeId);
   }
@@ -69,11 +74,6 @@ export class ChatTree {
 
   private hasMessage(messageId: string): boolean {
     return this.tree.hasNode(messageId);
-  }
-
-  private getMessagePath(messageId: string): UIMessage[] {
-    const path = this.tree.getPathToNode(messageId);
-    return path.map((node) => node.data);
   }
 }
 
