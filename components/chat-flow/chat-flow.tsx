@@ -25,19 +25,8 @@ export default function ChatFlow({ messages, setMessages, status }: ChatFlowProp
 
   const { nodes, edges } = useMemo(() => {
     chatTree.current!.updateFromMessages(messages, status);
-    const result = generateLayoutedElements(chatTree.current!.tree, styleConfig);
-
     const activeNodeId = messages.length > 0 ? messages[messages.length - 1].id : null;
-
-    const nodesWithActiveState = result.nodes.map((node) => ({
-      ...node,
-      data: {
-        ...node.data,
-        isActive: node.id === activeNodeId,
-      },
-    }));
-
-    return { nodes: nodesWithActiveState, edges: result.edges };
+    return generateLayoutedElements(chatTree.current!.tree, styleConfig, activeNodeId, status);
   }, [messages, status, styleConfig]);
 
   const onNodesChange = useCallback(() => {}, []);

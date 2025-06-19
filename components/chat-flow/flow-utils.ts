@@ -4,7 +4,12 @@ import Tree, { TreeNodeImpl } from "@/lib/tree";
 import { UIMessage } from "./types";
 import { NODE_ROLE_CONFIG, DEFAULT_EDGE_COLOR } from "./config";
 
-export function generateLayoutedElements(tree: Tree<UIMessage>, styleConfig: StyleConfig) {
+export function generateLayoutedElements(
+  tree: Tree<UIMessage>,
+  styleConfig: StyleConfig,
+  activeNodeId?: string | null,
+  status?: string,
+) {
   if (tree.isEmpty()) {
     return { nodes: [], edges: [] };
   }
@@ -58,7 +63,7 @@ export function generateLayoutedElements(tree: Tree<UIMessage>, styleConfig: Sty
           label: formatMessageLabel(message, styleConfig),
           role: message.role,
           isRoot: nodeImpl.isRoot(),
-          isActive: false,
+          isActive: message.id === activeNodeId,
         },
         sourcePosition: Position.Bottom,
         targetPosition: Position.Top,
@@ -69,15 +74,22 @@ export function generateLayoutedElements(tree: Tree<UIMessage>, styleConfig: Sty
         const role = message.role as keyof typeof NODE_ROLE_CONFIG;
         const color = NODE_ROLE_CONFIG[role]?.edgeColor || DEFAULT_EDGE_COLOR;
 
+        // 只有在streaming状态下才为连接到active节点的边添加动画
+        const isActiveEdge =
+          status === "streaming" &&
+          activeNodeId &&
+          (nodeImpl.id === activeNodeId || nodeImpl.parent.id === activeNodeId);
+
         edges.push({
           id: `${nodeImpl.parent.id}-${nodeImpl.id}`,
           source: nodeImpl.parent.id,
           target: nodeImpl.id,
           type: styleConfig.edgeType,
-          animated: styleConfig.edgeAnimated,
+          animated: isActiveEdge ? true : styleConfig.edgeAnimated,
           style: {
-            strokeWidth: styleConfig.edgeWidth,
-            stroke: color,
+            strokeWidth: isActiveEdge ? styleConfig.edgeWidth + 1 : styleConfig.edgeWidth,
+            stroke: isActiveEdge ? color : color,
+            opacity: isActiveEdge ? 1 : 0.7,
           },
         });
       }

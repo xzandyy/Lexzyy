@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Bot } from "lucide-react";
 
 interface ChatHeaderProps {
@@ -5,7 +6,7 @@ interface ChatHeaderProps {
   error?: Error | null;
 }
 
-export default function ChatHeader({ status }: ChatHeaderProps) {
+const ChatHeader = memo(function ChatHeader({ status }: ChatHeaderProps) {
   return (
     <div className="h-12 bg-white border-b border-gray-200 z-10">
       <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -36,4 +37,6 @@ export default function ChatHeader({ status }: ChatHeaderProps) {
       </div>
     </div>
   );
-}
+});
+
+export default ChatHeader;

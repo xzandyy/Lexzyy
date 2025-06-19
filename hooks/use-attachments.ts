@@ -11,6 +11,7 @@ export interface UseAttachmentsReturn {
   clearAllFiles: () => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleFileInputClick: () => void;
   hasLoadingFiles: boolean;
   getFileListForSubmit: () => FileList | undefined;
 }
@@ -124,6 +125,10 @@ export default function useAttachments(): UseAttachmentsReturn {
     [addFiles],
   );
 
+  const handleFileInputClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
   // 获取用于提交的FileList
   const getFileListForSubmit = useCallback((): FileList | undefined => {
     const successFiles = files.filter((f) => f.status === "success");
@@ -135,7 +140,7 @@ export default function useAttachments(): UseAttachmentsReturn {
   }, [files]);
 
   // 是否有正在加载的文件
-  const hasLoadingFiles = files.some((f) => f.status === "loading" || f.status === "pending");
+  const hasLoadingFiles = files.some((f) => f.status === "loading");
 
   // 拖拽事件处理
   const onDragEnter = useCallback((e: DragEvent) => {
@@ -220,6 +225,7 @@ export default function useAttachments(): UseAttachmentsReturn {
     isDragOver,
     fileInputRef,
     handleFileSelect,
+    handleFileInputClick,
     hasLoadingFiles,
     getFileListForSubmit,
   };

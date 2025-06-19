@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText } from "lucide-react";
 
@@ -5,7 +6,7 @@ interface DragDropOverlayProps {
   isVisible: boolean;
 }
 
-export default function DragDropOverlay({ isVisible }: DragDropOverlayProps) {
+const DragDropOverlay = memo(function DragDropOverlay({ isVisible }: DragDropOverlayProps) {
   return (
     <AnimatePresence>
       {isVisible && (
@@ -47,4 +48,6 @@ export default function DragDropOverlay({ isVisible }: DragDropOverlayProps) {
       )}
     </AnimatePresence>
   );
-}
+});
+
+export default DragDropOverlay;

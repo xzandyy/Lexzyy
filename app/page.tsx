@@ -1,48 +1,48 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { useMemo } from "react";
 import ChatList from "@/components/chat-list";
 import ChatInput from "@/components/chat-input";
 import LeftSidebar from "@/components/left-sidebar";
-import DragDropOverlay from "@/components/drag-drop-overlay";
 import useScrollToUserMessage from "@/hooks/use-scroll-to-user-message";
-import useAttachments from "@/hooks/use-attachments";
 import ChatHeader from "@/components/chat-header";
 import { Network, History, Settings } from "lucide-react";
 import ChatFlow from "@/components/chat-flow";
+import useLockedValue from "@/hooks/use-locked-value";
 
 export default function Home() {
   const { messages, setMessages, input, handleInputChange, handleSubmit, status, error, reload, stop } = useChat();
+  const lockedMessages = useLockedValue(messages, status, "streaming");
   const { lastUserMessageRef } = useScrollToUserMessage(messages);
-  const attachments = useAttachments();
+
+  const sidebarTabs = useMemo(
+    () => [
+      {
+        id: "chat-flow",
+        icon: Network,
+        label: "对话流",
+        component: <ChatFlow messages={lockedMessages} setMessages={setMessages} status={status} />,
+      },
+      {
+        id: "history",
+        icon: History,
+        label: "历史记录",
+        component: undefined,
+      },
+      {
+        id: "settings",
+        icon: Settings,
+        label: "设置",
+        component: undefined,
+      },
+    ],
+    [lockedMessages, setMessages, status],
+  );
 
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-white">
-      <DragDropOverlay isVisible={attachments.isDragOver} />
-
-      <LeftSidebar
-        defaultActiveTabId="chat-flow"
-        tabs={[
-          {
-            id: "chat-flow",
-            icon: Network,
-            label: "对话流",
-            component: <ChatFlow messages={messages} setMessages={setMessages} status={status} />,
-          },
-          {
-            id: "history",
-            icon: History,
-            label: "历史记录",
-            component: undefined,
-          },
-          {
-            id: "settings",
-            icon: Settings,
-            label: "设置",
-            component: undefined,
-          },
-        ]}
-      />
+      <LeftSidebar defaultActiveTabId="chat-flow" tabs={sidebarTabs} />
 
       <div className="pl-14 flex-1 flex flex-col min-w-0">
         <ChatHeader status={status} />
@@ -56,7 +56,6 @@ export default function Home() {
           onSubmit={handleSubmit}
           onStop={stop}
           onReload={reload}
-          attachments={attachments}
         />
       </div>
     </div>

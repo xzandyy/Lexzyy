@@ -1,6 +1,7 @@
 import { LucideIcon, Menu } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, memo, useCallback } from "react";
 import { motion } from "framer-motion";
+import TabButton from "./tab-button";
 
 export interface LeftSidebarProps {
   defaultActiveTabId: string;
@@ -12,11 +13,25 @@ export interface LeftSidebarProps {
   }[];
 }
 
-export default function LeftSidebar({ tabs, defaultActiveTabId }: LeftSidebarProps) {
+const LeftSidebar = memo(function LeftSidebar({ tabs, defaultActiveTabId }: LeftSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTabId, setActiveTabId] = useState<string | null>(defaultActiveTabId);
 
   const currentItem = tabs.find((item) => item.id === activeTabId);
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed((prev) => !prev);
+  };
+
+  const handleTabClick = useCallback(
+    (tabId: string) => {
+      setActiveTabId(tabId);
+      if (isCollapsed) {
+        setIsCollapsed(false);
+      }
+    },
+    [isCollapsed],
+  );
 
   return (
     <motion.div
@@ -34,7 +49,7 @@ export default function LeftSidebar({ tabs, defaultActiveTabId }: LeftSidebarPro
         {/* 展开/关闭 */}
         <div className="h-12 border-b border-gray-200 flex flex-row space-x-1">
           <button
-            onClick={() => setIsCollapsed((prev) => !prev)}
+            onClick={handleToggleCollapse}
             className="flex-1 text-gray-700 hover:bg-gray-100 rounded transition-colors"
             title="展开/收起侧边栏"
           >
@@ -44,28 +59,14 @@ export default function LeftSidebar({ tabs, defaultActiveTabId }: LeftSidebarPro
 
         {/* 功能按钮 */}
         <div className="w-14 flex-1 flex flex-col items-center py-2 space-y-1">
-          {tabs.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTabId === item.id;
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTabId(item.id);
-                  if (isCollapsed) {
-                    setIsCollapsed(false);
-                  }
-                }}
-                className={`p-2 rounded transition-colors ${
-                  isActive ? "bg-blue-100 text-blue-600" : "text-gray-600 hover:bg-gray-100"
-                }`}
-                title={item.label}
-              >
-                <Icon className="w-5 h-5" />
-              </button>
-            );
-          })}
+          {tabs.map((item) => (
+            <TabButton
+              key={item.id}
+              item={item}
+              isActive={activeTabId === item.id}
+              onClick={() => handleTabClick(item.id)}
+            />
+          ))}
         </div>
       </div>
 
@@ -78,4 +79,6 @@ export default function LeftSidebar({ tabs, defaultActiveTabId }: LeftSidebarPro
       </div>
     </motion.div>
   );
-}
+});
+
+export default LeftSidebar;

@@ -3,7 +3,7 @@ import { getActualMimeType } from "./mime-detector";
 import { isImageFile, isTextFile, isDocumentFile } from "./file-type-checker";
 import { convertDocumentToText, createTextDataUrl } from "./document-converter";
 
-export type FileStatus = "pending" | "loading" | "success" | "error";
+export type FileStatus = "loading" | "success" | "error";
 
 export interface ChatAttachment {
   id: string;
@@ -29,7 +29,7 @@ export async function processFile(file: File): Promise<ChatAttachment> {
   const fileWithStatus: ChatAttachment = {
     id,
     file,
-    status: "pending",
+    status: "loading",
     originalName: file.name,
     originalType: file.type,
   };

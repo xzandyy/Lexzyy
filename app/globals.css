@@ -48,3 +48,8 @@ body::-webkit-scrollbar-button,
 div::-webkit-scrollbar-button {
   display: none;
 }
+
+/* React Flow 边样式优化 */
+.react-flow .react-flow__edges .react-flow__edge path {
+  transition: all 0.3s ease;
+}
