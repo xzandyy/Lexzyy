@@ -1,6 +1,5 @@
 import { Tree, createTree, TreeNodeImpl } from "@/lib/tree";
 import type { UIMessage } from "./types";
-import { useChat } from "@ai-sdk/react";
 
 export class ChatTree {
   tree: Tree<UIMessage>;
@@ -9,11 +8,7 @@ export class ChatTree {
     this.tree = createTree();
   }
 
-  updateFromMessages(
-    messages: UIMessage[],
-    status: ReturnType<typeof useChat>["status"],
-    forceUpdate: boolean = false,
-  ): void {
+  updateFromMessages(messages: UIMessage[], forceUpdate: boolean = false): void {
     if (messages.length === 0) return;
 
     if (this.tree.isEmpty()) {
@@ -23,14 +18,10 @@ export class ChatTree {
     let lastExistingIndex = -1;
 
     if (!forceUpdate) {
-      if (status === "streaming") {
-        lastExistingIndex = messages.length - 2;
-      } else {
-        for (let i = messages.length - 1; i >= 0; i--) {
-          if (this.hasMessage(messages[i].id)) {
-            lastExistingIndex = i;
-            break;
-          }
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (this.hasMessage(messages[i].id)) {
+          lastExistingIndex = i;
+          break;
         }
       }
     }
@@ -47,9 +38,22 @@ export class ChatTree {
     }
   }
 
-  getMessagePath(messageId: string): UIMessage[] {
-    const path = this.tree.getPathToNode(messageId);
-    return path.map((node) => node.data);
+  getMessagePathFromRoot(messageId: string): UIMessage[] {
+    const path: UIMessage[] = [];
+    this.tree.traverseToRoot(messageId, (node) => path.push(node.data));
+    return path.reverse();
+  }
+
+  getMessagePathToFirstLeaf(messageId: string): UIMessage[] {
+    const path: UIMessage[] = [];
+    this.tree.traverseToFirstLeaf(messageId, (node) => path.push(node.data));
+    return path;
+  }
+
+  getMessagePathFromRootToFirstLeaf(messageId: string): UIMessage[] {
+    const fromRoot = this.getMessagePathFromRoot(messageId);
+    const toFirstLeaf = this.getMessagePathToFirstLeaf(messageId);
+    return fromRoot.slice(0, -1).concat(toFirstLeaf);
   }
 
   private pruneToPath(nodeId: string): boolean {
@@ -64,7 +68,7 @@ export class ChatTree {
     this.tree.setNode(message.id, message, parentId);
   }
 
-  private removeMessage(messageId: string): boolean {
+  removeMessage(messageId: string): boolean {
     return this.tree.removeNode(messageId);
   }
 

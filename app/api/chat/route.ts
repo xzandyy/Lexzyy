@@ -26,6 +26,7 @@ export async function POST(req: Request) {
     const result = streamText({
       model: openrouter.chat("openai/gpt-4o-mini"),
       messages: messages,
+      temperature: 0,
     });
 
     console.log("OpenRouter响应流已创建，准备返回");

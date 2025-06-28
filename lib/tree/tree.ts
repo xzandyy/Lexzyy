@@ -242,21 +242,42 @@ export class Tree<T = unknown> {
   }
 
   /**
-   * 获取节点路径（从根到指定节点）
+   * 从指定节点向上遍历到根节点
    */
-  getPathToNode(nodeId: string): TreeNode<T>[] {
+  traverseToRoot(nodeId: string, callback: (node: TreeNode<T>) => void): void {
     const node = this.nodeMap.get(nodeId);
-    if (!node) return [];
+    if (!node) return;
 
-    const path: TreeNode<T>[] = [];
     let current: TreeNode<T> | undefined = node;
-
     while (current) {
-      path.unshift(current);
+      callback(current);
       current = current.parent;
     }
+  }
 
-    return path;
+  /**
+   * 从指定节点向下遍历到第一个叶子节点
+   */
+  traverseToFirstLeaf(nodeId: string, callback: (node: TreeNode<T>) => void): void {
+    const node = this.nodeMap.get(nodeId);
+    if (!node) return;
+
+    let current: TreeNode<T> = node;
+    callback(current);
+
+    while (current.children.length > 0) {
+      current = current.children[0];
+      callback(current);
+    }
+  }
+
+  /**
+   * 获取从根节点到指定节点的路径
+   */
+  getPathToNode(nodeId: string): TreeNode<T>[] {
+    const path: TreeNode<T>[] = [];
+    this.traverseToRoot(nodeId, (node) => path.push(node));
+    return path.reverse();
   }
 
   /**

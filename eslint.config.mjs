@@ -16,6 +16,8 @@ const eslintConfig = [
   {
     rules: {
       "import/no-anonymous-default-export": "off",
+      "@typescript-eslint/no-unsafe-function-type": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 ];

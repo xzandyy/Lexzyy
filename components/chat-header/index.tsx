@@ -15,7 +15,13 @@ const ChatHeader = memo(function ChatHeader({ status }: ChatHeaderProps) {
           <h1 className="text-lg font-semibold text-gray-900">Lexzyy</h1>
         </div>
         <div className="flex items-center space-x-2 text-sm text-gray-500">
-          {(status === "streaming" || status === "submitted") && (
+          {status === "submitted" && (
+            <>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>等待回复...</span>
+            </>
+          )}
+          {status === "streaming" && (
             <>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span>正在回复...</span>

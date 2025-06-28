@@ -15,6 +15,11 @@ interface FileItemProps {
 }
 
 export default function FileItem({ file, onRemove, onRetry }: FileItemProps) {
+  const filename = file.originalName;
+  const size = formatFileSize(file.file.size);
+  const fileIsLoading = file.status === "loading";
+  const hasError = file.status === "error";
+
   const handleRemove = () => {
     onRemove(file.id);
   };
@@ -26,11 +31,11 @@ export default function FileItem({ file, onRemove, onRetry }: FileItemProps) {
   return (
     <div className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm border bg-gray-100 border-gray-200">
       <FileText className="w-4 h-4" />
-      <span className="text-gray-700 max-w-[150px] truncate">{file.originalName}</span>
-      <span className="text-gray-500 text-xs">({formatFileSize(file.file.size)})</span>
+      <span className="text-gray-700 max-w-[150px] truncate">{filename}</span>
+      <span className="text-gray-500 text-xs">({size})</span>
 
-      {file.status === "loading" && <Loader2 className="w-3 h-3 animate-spin text-blue-500" />}
-      {file.status === "error" && (
+      {fileIsLoading && <Loader2 className="w-3 h-3 animate-spin text-blue-500" />}
+      {hasError && (
         <div className="flex items-center gap-1">
           <AlertCircle className="w-3 h-3 text-red-500" />
           <button
