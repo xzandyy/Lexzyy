@@ -5,7 +5,7 @@ import FileItem from "./file-item";
 
 interface FilePreviewProps {
   files: ChatAttachment[];
-  hasLoadingFiles: boolean;
+  isLoading: boolean;
   onRemoveFile: (id: string) => void;
   onRetryFile: (id: string) => void;
   onClearAllFiles: () => void;
@@ -13,7 +13,7 @@ interface FilePreviewProps {
 
 const FilePreview = memo(function FilePreview({
   files,
-  hasLoadingFiles,
+  isLoading,
   onRemoveFile,
   onRetryFile,
   onClearAllFiles,
@@ -31,7 +31,7 @@ const FilePreview = memo(function FilePreview({
           清除所有文件
         </button>
 
-        {hasLoadingFiles && (
+        {isLoading && (
           <span className="text-xs text-blue-600 flex items-center gap-1">
             <Loader2 className="w-3 h-3 animate-spin" />
             正在处理文件...

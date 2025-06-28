@@ -1,24 +1,10 @@
-import React, { memo } from "react";
-import ReactMarkdown, { Components } from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import React from "react";
+import { Components } from "react-markdown";
 import MermaidRenderer from "./mermaid-renderer";
+import CodeHighlight from "./code-highlight";
 import "katex/dist/katex.min.css";
 
-const MarkdownComponent = memo(function MarkdownComponent({ content }: { content: string }) {
-  return (
-    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={components}>
-      {content}
-    </ReactMarkdown>
-  );
-});
-
-export default MarkdownComponent;
-
-const components: Components = {
+export const components: Components = {
   // heading
   h1: ({ children }) => <h1 className="text-4xl font-bold text-gray-900 mb-4 mt-6 first:mt-0">{children}</h1>,
   h2: ({ children }) => <h2 className="text-2xl font-semibold text-gray-900 mb-3 mt-5 first:mt-0">{children}</h2>,
@@ -49,9 +35,9 @@ const components: Components = {
   pre: ({ children }) => {
     const codeElement = React.Children.toArray(children)[0] as React.ReactElement;
     const codeProps = codeElement.props as { className: string; children: string };
-    const match = /language-(\w+)(-loading)?/.exec(codeProps.className || "");
-    const language = match?.[1] ?? "";
-    const isLoading = match?.[2] === "-loading";
+    const match = /language-(loading-)?(\w+)/.exec(codeProps.className || "");
+    const isLoading = match?.[1] === "loading-";
+    const language = match?.[2] ?? "";
     const codeString = String(codeProps.children).replace(/\n$/, "");
 
     // Mermaid图表渲染
@@ -59,27 +45,7 @@ const components: Components = {
       return <MermaidRenderer chart={isLoading ? "" : codeString} loading={isLoading} />;
     }
 
-    return (
-      <pre className="my-4 rounded-lg overflow-x-auto">
-        <SyntaxHighlighter
-          style={vscDarkPlus}
-          language={language}
-          customStyle={{
-            margin: 0,
-            padding: "16px",
-            fontSize: "14px",
-            lineHeight: "1.5",
-            backgroundColor: "#2d3748",
-            whiteSpace: "pre",
-            wordWrap: "normal",
-            overflowWrap: "normal",
-          }}
-          wrapLongLines={false}
-        >
-          {codeString}
-        </SyntaxHighlighter>
-      </pre>
-    );
+    return <CodeHighlight codeString={codeString} language={language} />;
   },
   code: ({ children }) => {
     return <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-sm break-all">{children}</code>;

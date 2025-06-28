@@ -1,15 +1,18 @@
 import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText } from "lucide-react";
+import useDragDropFiles from "@/hooks/use-drag-drop-files";
 
 interface DragDropOverlayProps {
-  isVisible: boolean;
+  onFilesDrop: (files: FileList) => void;
 }
 
-const DragDropOverlay = memo(function DragDropOverlay({ isVisible }: DragDropOverlayProps) {
+const DragDropOverlay = memo(function DragDropOverlay({ onFilesDrop }: DragDropOverlayProps) {
+  const { isFilesDragOver } = useDragDropFiles(onFilesDrop);
+
   return (
     <AnimatePresence>
-      {isVisible && (
+      {isFilesDragOver && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

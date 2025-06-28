@@ -1,132 +1,144 @@
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 
-type MarkdownLineType = "heading" | "hr" | "paragraph" | "code" | "list" | "table" | "quote" | "empty";
-
-function detectLineType(line: string): MarkdownLineType {
-  const trimmedLine = line.trim();
-
-  if (!trimmedLine) {
-    return "empty";
+function getLineType(line: string) {
+  line = line.trimStart();
+  if (!line) return "unknown";
+  switch (line[0]) {
+    case "#":
+      return "oneline";
+    case "-":
+    case "+":
+    case "*": {
+      if (line.length < 2) return "unknown";
+      if (line[1] === " ") return "list";
+      return "oneline";
+    }
+    case "0":
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+    case "6":
+    case "7":
+    case "8":
+    case "9": {
+      if (line.length < 3) return "unknown";
+      if (line[1] === "." && line[2] === " ") return "list";
+      return "oneline";
+    }
+    case "|":
+      return "table";
+    case ">":
+      return "quote";
+    case "`":
+    case "~": {
+      if (line.length < 3) return "unknown";
+      if (line.startsWith("```") || line.startsWith("~~~")) return "code";
+      return "oneline";
+    }
+    default:
+      return "oneline";
   }
-  if (trimmedLine.match(/^#{1,6}\s+/)) {
-    return "heading";
-  }
-  if (trimmedLine.startsWith("---")) {
-    return "hr";
-  }
-  if (trimmedLine.startsWith("```")) {
-    return "code";
-  }
-  if (trimmedLine.match(/^[-*+]\s+/) || trimmedLine.match(/^\d+\.\s+/)) {
-    return "list";
-  }
-  if (trimmedLine.startsWith(">")) {
-    return "quote";
-  }
-  if (trimmedLine.includes("|") && (trimmedLine.match(/^\|.*\|$/) || trimmedLine.match(/^[|:\s-]+$/))) {
-    return "table";
-  }
-  return "paragraph";
 }
 
-function processContent(content: string): [string[], string[]] {
-  if (!content) {
-    return [[], []];
-  }
+type LineType = "oneline" | "list" | "table" | "quote" | "code" | "unknown";
 
-  const chunks: string[] = [];
-  const lines = content.split("\n");
-
-  let currentChunk = "";
-  let currentType: MarkdownLineType = "empty";
-  let isCodeBlock = false;
-  let codeBlockDelimiter = "";
-
-  const addChunk = () => {
-    if (currentChunk) {
-      chunks.push(currentChunk);
-    }
-    currentChunk = "";
-    currentType = "empty";
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const lineType = detectLineType(line);
-    const addLine = () => {
-      if (i === lines.length - 1) {
-        currentChunk += line;
-      } else {
-        currentChunk += line + "\n";
-      }
-    };
-
-    if (lineType === "code") {
-      if (!isCodeBlock) {
-        addChunk();
-        currentChunk += line + "-loading\n";
-        isCodeBlock = true;
-        codeBlockDelimiter = line.match(/^(`{3,})(.*)/)?.[1] || "";
-      } else if (line.startsWith(codeBlockDelimiter)) {
-        addLine();
-        currentChunk = currentChunk.replace(/^([^\n]*)-loading(.*)/, "$1$2");
-        isCodeBlock = false;
-        codeBlockDelimiter = "";
-      } else {
-        addLine();
-      }
-    } else if (isCodeBlock) {
-      addLine();
-    } else if (lineType === "empty") {
-      addLine();
-    } else if (["heading", "hr", "paragraph"].includes(lineType)) {
-      addChunk();
-      addLine();
-    } else if (["list", "table", "quote"].includes(lineType)) {
-      if (lineType === currentType) {
-        addLine();
-      } else {
-        addChunk();
-        addLine();
-      }
-    }
-
-    currentType = lineType;
-  }
-
-  addChunk();
-
-  if (chunks.length > 1) {
-    const secondLastChunkType = detectLineType(chunks[chunks.length - 2].split("\n")[0]);
-    const secondLastChunkCanBeMerged = ["list", "table", "quote"].includes(secondLastChunkType);
-    const lastChunk = chunks[chunks.length - 1];
-
-    if (
-      !secondLastChunkCanBeMerged ||
-      (secondLastChunkCanBeMerged &&
-        lastChunk.includes("\n") &&
-        detectLineType(lastChunk.split("\n")[0]) !== secondLastChunkType)
-    ) {
-      return [chunks.slice(0, -1), chunks.slice(-1)];
-    } else {
-      return [chunks.slice(0, -2), chunks.slice(-2)];
-    }
-  } else {
-    return [[], chunks];
-  }
-}
+type Chunk = {
+  type: LineType;
+  content: string;
+};
 
 function useChunks(content: string) {
-  const stableChunksRef = useRef<string[]>([]);
-  const stableChunksLengthRef = useRef(0);
+  // 变量
+  const chunks = useRef<Chunk[]>([]);
+  const cacheUnknownLine = useRef<Chunk>({ content: "", type: "unknown" });
+  const endPos = useRef(0);
+  const inCodeBlock = useRef(false);
+  const codeBlockDelimiter = useRef("");
 
-  return useMemo(() => {
-    const streamingContent = content.slice(stableChunksLengthRef.current);
-    const [stableChunks, streamingChunks] = processContent(streamingContent);
-    stableChunksRef.current.push(...stableChunks);
-    stableChunksLengthRef.current += stableChunks.reduce((acc, chunk) => acc + chunk.length, 0);
-    return stableChunksRef.current.concat(streamingChunks);
-  }, [content]);
+  // 一个字符一个字符地读取，一行一行地处理
+  let line = cacheUnknownLine.current;
+  const pos = endPos.current;
+  endPos.current = content.length;
+
+  for (let i = pos; i < content.length; i++) {
+    line.content += content[i];
+
+    // 遇到换行符，开启新的一行
+    if (content[i] === "\n") {
+      // 如果当前行一直还是未知类型，看怎么合并
+      if (line.type === "unknown") {
+        if (chunks.current.length > 0) {
+          // 1、有最后一块，合并进去
+          chunks.current[chunks.current.length - 1].content += line.content;
+        } else {
+          // 2、没有最后一块，作为oneline合并
+          line.type = "oneline";
+          chunks.current.push(line);
+        }
+      }
+      // 合并后，刷新当前行
+      line = { content: "", type: "unknown" };
+    } else {
+      if (line.type === "unknown") {
+        // 更新类型
+        const type = (line.type = getLineType(line.content));
+
+        // 如果还是未知类型，等待类型明确
+        if (type === "unknown") continue;
+
+        // 类型明确，看以什么方式合并
+
+        // 0、在代码块中
+        if (inCodeBlock.current) {
+          const lastChunk = chunks.current[chunks.current.length - 1];
+
+          // 注意此行是否是代码块结束
+          if (line.content.trimStart().startsWith(codeBlockDelimiter.current)) {
+            // 在代码块结束行删除-loading标记
+            lastChunk.content = lastChunk.content.replace(
+              codeBlockDelimiter.current + "loading-",
+              codeBlockDelimiter.current,
+            );
+            // 代码块结束，重置状态
+            inCodeBlock.current = false;
+            codeBlockDelimiter.current = "";
+          }
+          // 合并
+          lastChunk.content += line.content;
+          line = lastChunk;
+        } else if (type === "code") {
+          // 注意此行是否是代码块开始
+          inCodeBlock.current = true;
+          codeBlockDelimiter.current = line.content.match(/^\s*(`{3,}|~{3,})/)?.[1] || "";
+          // 在代码块开始行添加-loading标记
+          line.content = line.content.replace(codeBlockDelimiter.current, codeBlockDelimiter.current + "loading-");
+          // 合并
+          chunks.current.push(line);
+        } else if (chunks.current.length === 0) {
+          // 1、没有最后一块，直接合并
+          chunks.current.push(line);
+        } else {
+          // 2、有最后一块，看最后一块类型是否相同
+          const lastChunk = chunks.current[chunks.current.length - 1];
+          if (line.type !== lastChunk.type) {
+            // 3、最后一块类型不同，直接合并
+            chunks.current.push(line);
+          } else {
+            // 4、最后一块类型相同，合并
+            lastChunk.content += line.content;
+            line = lastChunk;
+          }
+        }
+      }
+    }
+  }
+
+  // 留下一点缓存，下次从这里开始
+  cacheUnknownLine.current = line;
+
+  return chunks.current;
 }
 
 export default useChunks;

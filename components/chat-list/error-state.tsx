@@ -2,10 +2,10 @@ import { AlertCircle, RotateCcw } from "lucide-react";
 
 interface ErrorStateProps {
   error: Error;
-  onRetry: () => void;
+  onReload: () => void;
 }
 
-export default function ErrorState({ error, onRetry }: ErrorStateProps) {
+export default function ErrorState({ error, onReload }: ErrorStateProps) {
   return (
     <div className="group">
       <div className="flex items-start space-x-4">
@@ -22,7 +22,7 @@ export default function ErrorState({ error, onRetry }: ErrorStateProps) {
             </div>
             <div className="text-gray-700 text-sm mb-3">{error.message || "未知错误"}</div>
             <button
-              onClick={onRetry}
+              onClick={onReload}
               className="flex items-center space-x-2 px-3 py-1.5 bg-black text-white rounded-md hover:bg-gray-800 text-sm transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
