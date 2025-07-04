@@ -8,8 +8,8 @@ import { hastToJSX } from "./utils/hast-to-jsx";
 initPresets();
 
 export default function Markdown({ uid, preset, children }: MarkdowndProps): ReactNode {
-  const chunkProcessor = useRef(new StreamingMarkdownProcessor());
-  const chunks = chunkProcessor.current.process(children);
+  const streamingMarkdownProcessor = useRef(new StreamingMarkdownProcessor());
+  const chunks = streamingMarkdownProcessor.current.process(children);
 
   if (chunks.length === 0) return "";
 

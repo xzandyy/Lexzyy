@@ -1,23 +1,26 @@
 import { memo } from "react";
-import { LeftSidebarProps } from ".";
+import { LucideIcon } from "lucide-react";
 
 const TabButton = memo(function TabButton({
-  item,
+  id,
+  icon,
+  label,
   isActive,
   onClick,
 }: {
-  item: LeftSidebarProps["tabs"][0];
+  id: string;
+  icon: LucideIcon;
+  label: string;
   isActive: boolean;
-  onClick: () => void;
+  onClick: (id: string) => void;
 }) {
-  const Icon = item.icon;
+  const Icon = icon;
 
   return (
     <button
-      key={item.id}
-      onClick={onClick}
+      onClick={() => onClick(id)}
       className={`p-2 rounded transition-colors ${isActive ? "bg-blue-100 text-blue-600" : "text-gray-600 hover:bg-gray-100"}`}
-      title={item.label}
+      title={label}
     >
       <Icon className="w-5 h-5" />
     </button>

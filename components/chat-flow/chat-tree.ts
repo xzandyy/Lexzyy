@@ -1,86 +1,474 @@
-import { Tree, createTree, TreeNodeImpl } from "@/lib/tree";
-import type { UIMessage } from "./types";
+import { Tree, TreeNode } from "@/lib/tree";
+import { Edge, Node } from "@xyflow/react";
+import { UIMessage } from "ai";
+import { ActiveNodeData, FlowNodeData, FlowNodeHandlers, StyleConfig } from "./types";
+import { ChatStatus } from "@/types";
 
-export class ChatTree {
-  tree: Tree<UIMessage>;
+type ChatTreeData = {
+  message: UIMessage;
+};
 
-  constructor() {
-    this.tree = createTree();
+const SUBMIT = 1 << 0;
+const AWAIT = 1 << 1;
+const STREAM = 1 << 2;
+const SETTLE = 1 << 3;
+const STAGE = 1 << 4;
+const ACTIVATE = 1 << 5;
+const JUMP_NODE = 1 << 6;
+const JUMP_FORK = 1 << 7;
+const RESTYLE = 1 << 8;
+const SUBMIT_AWAIT = SUBMIT | AWAIT;
+const SUBMIT_AWAIT_SETTLE_STREAM = SUBMIT | AWAIT | SETTLE | STREAM;
+
+export default class ChatTree {
+  // input
+  newStatus: ChatStatus;
+  oldStatus: ChatStatus;
+  newSrcMessages: UIMessage[];
+  oldSrcMessages: UIMessage[];
+  newStyleConfig: StyleConfig;
+  oldStyleConfig: StyleConfig;
+  newActiveNodeData: ActiveNodeData;
+  oldActiveNodeData: ActiveNodeData;
+  handlers: FlowNodeHandlers;
+
+  // internal
+  tree: Tree<ChatTreeData> = new Tree<ChatTreeData>();
+  subtreeWidths: Map<string, number> = new Map();
+  flowNodes: Map<string, Node<FlowNodeData>> = new Map();
+  flowEdges: Map<string, Edge> = new Map();
+  updateFlags: number = 0;
+  updateMessagesToShowAsSrc: boolean = true;
+  clickTimer: number | null = null;
+
+  // output
+  messagesToShow: UIMessage[] = [];
+  flowElements: { nodes: Node<FlowNodeData>[]; edges: Edge[] } = { nodes: [], edges: [] };
+  flowCSSVariables: React.CSSProperties = {};
+
+  constructor(
+    status: ChatStatus,
+    messages: UIMessage[],
+    styleConfig: StyleConfig,
+    activeNodeData: ActiveNodeData,
+    handlers: FlowNodeHandlers,
+    systemMessage: UIMessage,
+  ) {
+    // input
+    this.newStatus = this.oldStatus = status;
+    this.newSrcMessages = this.oldSrcMessages = messages;
+    this.newStyleConfig = this.oldStyleConfig = styleConfig;
+    this.newActiveNodeData = this.oldActiveNodeData = activeNodeData;
+    this.handlers = handlers;
+
+    // internal
+    this.setRoot(systemMessage);
+    this.subtreeWidths.set(systemMessage.id, 1);
+    this.flowNodes.set(systemMessage.id, {
+      id: systemMessage.id,
+      type: "systemNode",
+      position: { x: 0, y: 0 },
+      data: {
+        label: this.formatMessageLabel(systemMessage),
+        message: systemMessage,
+        centerX: 0,
+        depth: 0,
+        isAwait: false,
+        isActive: true,
+        handlers: this.handlers,
+      },
+    });
+
+    // output
+    this.messagesToShow = [systemMessage];
+    this.renewFlowElements();
+    this.updateFlowCSSVariables();
   }
 
-  updateFromMessages(messages: UIMessage[], forceUpdate: boolean = false): void {
-    if (messages.length === 0) return;
+  update(status: ChatStatus, messages: UIMessage[], styleConfig: StyleConfig, activeNodeData: ActiveNodeData) {
+    // 0、update input //
 
-    if (this.tree.isEmpty()) {
-      this.setRoot(messages[0]);
+    // update old values
+    this.oldStatus = this.newStatus;
+    this.oldSrcMessages = this.newSrcMessages;
+    this.oldStyleConfig = this.newStyleConfig;
+    this.oldActiveNodeData = this.newActiveNodeData;
+
+    // update new values
+    this.newStatus = status;
+    this.newSrcMessages = messages;
+    this.newStyleConfig = styleConfig;
+    this.newActiveNodeData = activeNodeData;
+
+    // 1、mark updates //
+
+    this.updateFlags = 0;
+
+    // a、srcMessages
+    if (this.oldStatus !== this.newStatus) {
+      if (this.newStatus === "submitted") {
+        // submit: ready -> submitted
+        this.updateFlags |= SUBMIT;
+      } else if (this.newStatus === "streaming") {
+        // await: submitted -> streaming
+        this.updateFlags |= AWAIT;
+      } else if (this.newStatus === "ready") {
+        // settle: streaming -> ready
+        this.updateFlags |= SETTLE;
+      }
+    } else if (this.newStatus === "streaming") {
+      // stream: streaming -> streaming
+      this.updateFlags |= STREAM;
+    } else if (this.oldSrcMessages !== this.newSrcMessages) {
+      // stage: setSrcMessages
+      this.updateFlags |= STAGE;
     }
 
-    let lastExistingIndex = -1;
-
-    if (!forceUpdate) {
-      for (let i = messages.length - 1; i >= 0; i--) {
-        if (this.hasMessage(messages[i].id)) {
-          lastExistingIndex = i;
-          break;
-        }
+    // b、activeNodeData
+    if (this.oldActiveNodeData !== this.newActiveNodeData) {
+      if (this.newActiveNodeData.method === "activate") {
+        this.updateFlags |= ACTIVATE;
+      } else if (this.newActiveNodeData.method === "jump-node") {
+        this.updateFlags |= JUMP_NODE;
+      } else if (this.newActiveNodeData.method === "jump-fork") {
+        this.updateFlags |= ACTIVATE;
+        this.updateFlags |= JUMP_FORK;
       }
     }
 
-    for (let i = lastExistingIndex + 1; i < messages.length; i++) {
-      const message = messages[i];
-      const parentMessage = messages[i - 1];
+    // c、styleConfig
+    if (this.oldStyleConfig !== this.newStyleConfig) {
+      // restyle
+      this.updateFlags |= RESTYLE;
+    }
 
-      try {
-        this.setMessage(message, parentMessage?.id);
-      } catch (error) {
-        console.warn(`无法添加消息 ${message.id}:`, error);
+    // 2、apply updates //
+
+    // a、update tree //
+
+    // submit/await
+    if (this.updateFlags & SUBMIT_AWAIT) {
+      const message = this.newSrcMessages.at(-1)!;
+      const parentId = this.newSrcMessages.at(-2)!.id;
+      this.setNode(message, parentId);
+    }
+
+    // settle
+    if (this.updateFlags & SETTLE) {
+      const message = this.newSrcMessages.at(-1)!;
+      this.setNode(message);
+    }
+
+    // b、update element //
+
+    // submit/await
+    if (this.updateFlags & SUBMIT_AWAIT) {
+      const parentId = this.newSrcMessages.at(-2)!.id;
+      const needFullUpdate = this.getNode(parentId)!.children.length !== 1;
+      const isUpdateAwait = !!(this.updateFlags & AWAIT);
+
+      if (needFullUpdate) {
+        const { horizontalSpacing, verticalSpacing, edgeType, edgeAnimated, edgeWidth } = this.newStyleConfig;
+        const message = this.newSrcMessages.at(-1)!;
+        const root = this.getRoot()!;
+        let pos: number = -this.subtreeWidths.get(root.id)! / 2;
+        let prevParentId: string | undefined;
+        const awaitMessageId = isUpdateAwait ? this.newSrcMessages.at(-1)!.id : undefined;
+
+        this.tree.traverseToRoot(message.id, (treeNode) => {
+          this.subtreeWidths.set(treeNode.id, (this.subtreeWidths.get(treeNode.id) || 0) + 1);
+        });
+
+        this.tree.levelOrderTraversal((treeNode, depth) => {
+          const parentId = treeNode.parent?.id;
+          const nodeId = treeNode.id;
+          const message = treeNode.data.message;
+
+          if (parentId && parentId !== prevParentId) {
+            const parentWidth = this.subtreeWidths.get(parentId)!;
+            const parentXPos = this.flowNodes.get(parentId)!.data.centerX;
+            pos = parentXPos - parentWidth / 2;
+          }
+
+          const nodeWidth = this.subtreeWidths.get(nodeId)!;
+          const centerX = Number((pos + nodeWidth / 2).toFixed(1));
+
+          pos += nodeWidth;
+
+          const isNodeAwait = isUpdateAwait && nodeId === awaitMessageId;
+
+          this.flowNodes.set(nodeId, {
+            id: nodeId,
+            type: `${message.role}Node`,
+            position: { x: centerX * horizontalSpacing, y: depth * verticalSpacing },
+            data: {
+              label: isNodeAwait ? "" : this.formatMessageLabel(message),
+              message,
+              centerX,
+              depth,
+              isAwait: isNodeAwait,
+              isActive: false,
+              handlers: this.handlers,
+            },
+          });
+
+          if (parentId) {
+            this.flowEdges.set(`${parentId}-${nodeId}`, {
+              id: `${parentId}-${nodeId}`,
+              source: parentId,
+              target: nodeId,
+              type: edgeType,
+              animated: isUpdateAwait || edgeAnimated,
+              style: {
+                strokeWidth: edgeWidth,
+              },
+            });
+          }
+
+          prevParentId = parentId;
+        });
+      } else {
+        const message = this.newSrcMessages.at(-1)!;
+        const parentNode = this.flowNodes.get(this.newSrcMessages.at(-2)!.id)!;
+        const { id, role } = message;
+        const { centerX: parentCenterX, depth: parentDepth } = parentNode.data;
+        const { horizontalSpacing, verticalSpacing, edgeType, edgeWidth } = this.newStyleConfig;
+        const edgeId = `${parentNode.id}-${id}`;
+
+        this.subtreeWidths.set(id, 1);
+
+        this.flowNodes.set(id, {
+          id,
+          type: `${role}Node`,
+          position: {
+            x: parentCenterX * horizontalSpacing,
+            y: (parentDepth + 1) * verticalSpacing,
+          },
+          data: {
+            label: isUpdateAwait ? "" : this.formatMessageLabel(message),
+            message,
+            centerX: parentCenterX,
+            depth: parentDepth + 1,
+            isAwait: isUpdateAwait,
+            isActive: false,
+            handlers: this.handlers,
+          },
+        });
+
+        this.flowEdges.set(edgeId, {
+          id: edgeId,
+          source: parentNode.id,
+          target: id,
+          type: edgeType,
+          animated: isUpdateAwait,
+          style: { strokeWidth: edgeWidth },
+        });
       }
+
+      this.renewFlowElements();
+    }
+    // settle
+    if (this.updateFlags & SETTLE) {
+      const message = this.newSrcMessages.at(-1)!;
+      const parentMessage = this.newSrcMessages.at(-2)!;
+      const flowNode = this.flowNodes.get(message.id)!;
+      const flowEdge = this.flowEdges.get(`${parentMessage.id}-${message.id}`)!;
+
+      this.flowNodes.set(flowNode.id, {
+        ...flowNode,
+        data: {
+          ...flowNode.data,
+          label: this.formatMessageLabel(message),
+          isAwait: false,
+          message,
+        },
+      });
+
+      this.flowEdges.set(flowEdge.id, {
+        ...flowEdge,
+        animated: styleConfig.edgeAnimated,
+      });
+
+      this.renewFlowElements();
+    }
+    // activate
+    if (this.updateFlags & ACTIVATE) {
+      const oldActiveNode = this.flowNodes.get(this.oldActiveNodeData.id)!;
+      const newActiveNode = this.flowNodes.get(this.newActiveNodeData.id)!;
+
+      this.flowNodes.set(oldActiveNode.id, {
+        ...oldActiveNode,
+        data: {
+          ...oldActiveNode.data,
+          isActive: false,
+        },
+      });
+
+      this.flowNodes.set(newActiveNode.id, {
+        ...newActiveNode,
+        data: {
+          ...newActiveNode.data,
+          isActive: true,
+        },
+      });
+
+      this.renewFlowElements();
+    }
+    // restyle
+    if (this.updateFlags & RESTYLE) {
+      const { horizontalSpacing, verticalSpacing, edgeType, edgeAnimated, edgeWidth } = styleConfig;
+      const {
+        horizontalSpacing: oldHorizontalSpacing,
+        verticalSpacing: oldVerticalSpacing,
+        edgeType: oldEdgeType,
+        edgeAnimated: oldEdgeAnimated,
+        edgeWidth: oldEdgeWidth,
+      } = this.oldStyleConfig;
+
+      if (horizontalSpacing !== oldHorizontalSpacing || verticalSpacing !== oldVerticalSpacing) {
+        this.flowNodes.forEach((node, id) => {
+          this.flowNodes.set(id, {
+            ...node,
+            position: {
+              x: node.data.centerX * horizontalSpacing,
+              y: node.data.depth * verticalSpacing,
+            },
+          });
+        });
+      }
+
+      if (edgeType !== oldEdgeType || edgeAnimated !== oldEdgeAnimated || edgeWidth !== oldEdgeWidth) {
+        this.flowEdges.forEach((edge, id) => {
+          this.flowEdges.set(id, {
+            ...edge,
+            type: edgeType,
+            animated: edge.animated || edgeAnimated,
+            style: { strokeWidth: edgeWidth },
+          });
+        });
+      }
+
+      this.renewFlowElements();
+    }
+
+    // c、update toshow //
+
+    // jump-node
+    if (this.updateFlags & JUMP_NODE) {
+      const { id } = this.newActiveNodeData;
+      this.messagesToShow = this.getMessagesFromRoot(id);
+      this.updateMessagesToShowAsSrc = this.messagesToShow.at(-1)?.id === this.newSrcMessages.at(-1)?.id;
+    }
+    // jump-fork
+    if (this.updateFlags & JUMP_FORK) {
+      const { id } = this.newActiveNodeData;
+      this.messagesToShow = this.getMessagesFromRootToFirstFork(id);
+      this.updateMessagesToShowAsSrc = this.messagesToShow.at(-1)?.id === this.newSrcMessages.at(-1)?.id;
+    }
+    // stage
+    if (this.updateFlags & STAGE) {
+      this.updateMessagesToShowAsSrc = true;
+    }
+    // submit/await/settle/stream
+    if (this.updateFlags & SUBMIT_AWAIT_SETTLE_STREAM) {
+      if (this.updateMessagesToShowAsSrc) {
+        this.messagesToShow = this.newSrcMessages;
+      }
+    }
+
+    // d、update css //
+
+    // restyle
+    if (this.updateFlags & RESTYLE) {
+      this.updateFlowCSSVariables();
     }
   }
 
-  getMessagePathFromRoot(messageId: string): UIMessage[] {
+  private renewFlowElements() {
+    this.flowElements = {
+      nodes: [...this.flowNodes.values()],
+      edges: [...this.flowEdges.values()],
+    };
+  }
+
+  private updateFlowCSSVariables() {
+    const { nodeWidth, nodeHeight, fontSize, lineHeight } = this.newStyleConfig;
+    const { maxWidth, exactTextHeight, maxCompleteLines } = this.calculateTextLayoutMetrics();
+    this.flowCSSVariables = {
+      "--node-width": `${nodeWidth}px`,
+      "--node-height": `${nodeHeight}px`,
+      "--node-font-size": `${fontSize}px`,
+      "--node-line-height": lineHeight,
+      "--node-max-width": `${maxWidth}px`,
+      "--node-text-height": `${exactTextHeight}px`,
+      "--node-line-clamp": maxCompleteLines,
+    } as React.CSSProperties;
+  }
+
+  private formatMessageLabel(message: UIMessage): string {
+    const content = message.content;
+    const { maxCharacters } = this.newStyleConfig;
+
+    if (maxCharacters === 0) {
+      return "";
+    }
+
+    if (content.length <= maxCharacters) {
+      return content;
+    }
+
+    return content.substring(0, maxCharacters) + "...";
+  }
+
+  private calculateTextLayoutMetrics() {
+    const { nodeWidth, nodeHeight, fontSize, lineHeight } = this.newStyleConfig;
+
+    const padding = 16;
+    const availableHeight = Math.max(0, nodeHeight - padding);
+    const lineHeightInPx = fontSize * lineHeight;
+    const maxCompleteLines = Math.max(1, Math.floor(availableHeight / lineHeightInPx));
+    const exactTextHeight = maxCompleteLines * lineHeightInPx;
+    const maxWidth = Math.max(0, nodeWidth - padding);
+
+    return {
+      maxWidth,
+      exactTextHeight,
+      maxCompleteLines,
+    };
+  }
+
+  private getMessagesFromRoot(messageId: string): UIMessage[] {
     const path: UIMessage[] = [];
-    this.tree.traverseToRoot(messageId, (node) => path.push(node.data));
+    this.tree.traverseToRoot(messageId, (node) => path.push(node.data.message));
     return path.reverse();
   }
 
-  getMessagePathToFirstLeaf(messageId: string): UIMessage[] {
+  private getMessagesToFirstFork(messageId: string): UIMessage[] {
     const path: UIMessage[] = [];
-    this.tree.traverseToFirstLeaf(messageId, (node) => path.push(node.data));
+    this.tree.traverseToFirstFork(messageId, (node) => path.push(node.data.message));
     return path;
   }
 
-  getMessagePathFromRootToFirstLeaf(messageId: string): UIMessage[] {
-    const fromRoot = this.getMessagePathFromRoot(messageId);
-    const toFirstLeaf = this.getMessagePathToFirstLeaf(messageId);
-    return fromRoot.slice(0, -1).concat(toFirstLeaf);
-  }
-
-  private pruneToPath(nodeId: string): boolean {
-    return this.tree.pruneToPath(nodeId);
+  private getMessagesFromRootToFirstFork(messageId: string): UIMessage[] {
+    const toFirstFork = this.getMessagesToFirstFork(messageId);
+    const fromRoot = this.getMessagesFromRoot(messageId);
+    fromRoot.length = fromRoot.length - 1;
+    return fromRoot.concat(toFirstFork);
   }
 
   private setRoot(message: UIMessage): void {
-    this.tree.setRoot(message.id, message);
+    this.tree.setRoot(message.id, { message });
   }
 
-  private setMessage(message: UIMessage, parentId?: string): void {
-    this.tree.setNode(message.id, message, parentId);
+  private getRoot(): TreeNode<ChatTreeData> | undefined {
+    return this.tree.getRoot();
   }
 
-  removeMessage(messageId: string): boolean {
-    return this.tree.removeNode(messageId);
+  private setNode(message: UIMessage, parentId?: string): void {
+    this.tree.setNode(message.id, { message }, parentId);
   }
 
-  private getMessage(messageId: string): TreeNodeImpl<UIMessage> | undefined {
-    return this.tree.getNode(messageId) as TreeNodeImpl<UIMessage>;
+  private getNode(messageId: string): TreeNode<ChatTreeData> | undefined {
+    return this.tree.getNode(messageId);
   }
-
-  private hasMessage(messageId: string): boolean {
-    return this.tree.hasNode(messageId);
-  }
-}
-
-export function createChatTree(): ChatTree {
-  return new ChatTree();
 }

@@ -4,7 +4,7 @@ import { HastRoot } from "../types";
 import { getPreset } from "./presets";
 
 export function hastToJSX(preset: string, hast: HastRoot) {
-  const components = getPreset(preset).markdownComponents;
+  const components = getPreset(preset)?.markdownComponents;
 
   return toJsxRuntime(hast, {
     Fragment,

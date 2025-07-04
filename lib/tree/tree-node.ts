@@ -1,9 +1,7 @@
-import { TreeNode } from "./types";
-
 /**
  * 树节点类实现
  */
-export class TreeNodeImpl<T = unknown> implements TreeNode<T> {
+export class TreeNode<T = unknown> {
   public id: string;
   public data: T;
   public children: TreeNode<T>[] = [];
@@ -76,7 +74,7 @@ export class TreeNodeImpl<T = unknown> implements TreeNode<T> {
   getSubtreeSize(): number {
     let size = 1; // 包含自身
     for (const child of this.children) {
-      size += (child as TreeNodeImpl<T>).getSubtreeSize();
+      size += (child as TreeNode<T>).getSubtreeSize();
     }
     return size;
   }

@@ -1,8 +1,9 @@
 import type { Attachment } from "ai";
 import { FileText, Download } from "lucide-react";
 import Image from "next/image";
+import { memo } from "react";
 
-export default function AttachmentRenderer({ attachments }: { attachments?: Attachment[] }) {
+const AttachmentRenderer = memo(function AttachmentRenderer({ attachments }: { attachments?: Attachment[] }) {
   if (!attachments || attachments.length === 0) return null;
 
   return (
@@ -43,4 +44,6 @@ export default function AttachmentRenderer({ attachments }: { attachments?: Atta
       ))}
     </div>
   );
-}
+});
+
+export default AttachmentRenderer;

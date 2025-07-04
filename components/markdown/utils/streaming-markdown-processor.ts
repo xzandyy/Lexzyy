@@ -137,7 +137,7 @@ export class StreamingMarkdownProcessor {
     } else if (line.type === "code") {
       return this.handleCodeBlockStart(line);
     } else {
-      return this.handleNormalContent(line);
+      return this.handleOtherType(line);
     }
   }
 
@@ -160,7 +160,7 @@ export class StreamingMarkdownProcessor {
     return this.addLineAsNewChunk(line);
   }
 
-  private handleNormalContent(line: MarkdownChunk): MarkdownChunk {
+  private handleOtherType(line: MarkdownChunk): MarkdownChunk {
     if (line.type === "oneline" || this.chunks.length === 0 || line.type !== this.getLastChunk().type) {
       return this.addLineAsNewChunk(line);
     }

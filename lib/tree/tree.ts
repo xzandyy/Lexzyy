@@ -1,5 +1,6 @@
-import { TreeNode, TreeNodeJson, TraversalCallback } from "./types";
-import { TreeNodeImpl } from "./tree-node";
+import { TreeNode } from "./tree-node";
+
+export type TraversalCallback<T> = (node: TreeNode<T>, depth: number) => boolean | void;
 
 /**
  * 多叉树类
@@ -10,7 +11,7 @@ export class Tree<T = unknown> {
 
   constructor(rootId?: string, rootData?: T) {
     if (rootId !== undefined && rootData !== undefined) {
-      this.root = new TreeNodeImpl(rootId, rootData);
+      this.root = new TreeNode(rootId, rootData);
       this.nodeMap.set(this.root.id, this.root);
     }
   }
@@ -19,7 +20,7 @@ export class Tree<T = unknown> {
    * 设置根节点
    */
   setRoot(id: string, data: T): TreeNode<T> {
-    this.root = new TreeNodeImpl(id, data);
+    this.root = new TreeNode(id, data);
     this.nodeMap.clear();
     this.nodeMap.set(this.root.id, this.root);
     return this.root;
@@ -53,7 +54,7 @@ export class Tree<T = unknown> {
       throw new Error(`父节点 ${parentId} 不存在`);
     }
 
-    const newNode = new TreeNodeImpl(nodeId, data, parent);
+    const newNode = new TreeNode(nodeId, data, parent);
     parent.children.push(newNode);
     this.nodeMap.set(nodeId, newNode);
 
@@ -90,7 +91,7 @@ export class Tree<T = unknown> {
 
     // 从父节点中移除
     if (node.parent) {
-      const parentNode = node.parent as TreeNodeImpl<T>;
+      const parentNode = node.parent as TreeNode<T>;
       parentNode.removeChild(nodeId);
     }
 
@@ -122,7 +123,7 @@ export class Tree<T = unknown> {
 
     // 从原父节点移除
     if (node.parent) {
-      const oldParent = node.parent as TreeNodeImpl<T>;
+      const oldParent = node.parent as TreeNode<T>;
       oldParent.removeChild(nodeId);
     }
 
@@ -140,7 +141,24 @@ export class Tree<T = unknown> {
     const node = startNode || this.root;
     if (!node) return;
 
-    this.preorderTraversalRecursive(node, callback, 0);
+    const nodes: TreeNode<T>[] = [node];
+    const depths: number[] = [0];
+
+    while (nodes.length > 0) {
+      const currentNode = nodes.pop()!;
+      const currentDepth = depths.pop()!;
+
+      if (callback(currentNode, currentDepth) === false) {
+        break;
+      }
+
+      // 直接操作子节点数组,避免创建临时对象
+      let i = currentNode.children.length;
+      while (i--) {
+        nodes.push(currentNode.children[i]);
+        depths.push(currentDepth + 1);
+      }
+    }
   }
 
   /**
@@ -150,7 +168,29 @@ export class Tree<T = unknown> {
     const node = startNode || this.root;
     if (!node) return;
 
-    this.postorderTraversalRecursive(node, callback, 0);
+    const nodes: TreeNode<T>[] = [node];
+    const depths: number[] = [0];
+    const visited = new Set<TreeNode<T>>();
+
+    while (nodes.length > 0) {
+      const currentNode = nodes[nodes.length - 1];
+      const currentDepth = depths[depths.length - 1];
+
+      if (!visited.has(currentNode) && currentNode.children.length > 0) {
+        visited.add(currentNode);
+        let i = currentNode.children.length;
+        while (i--) {
+          nodes.push(currentNode.children[i]);
+          depths.push(currentDepth + 1);
+        }
+      } else {
+        nodes.pop();
+        depths.pop();
+        if (callback(currentNode, currentDepth) === false) {
+          break;
+        }
+      }
+    }
   }
 
   /**
@@ -256,16 +296,16 @@ export class Tree<T = unknown> {
   }
 
   /**
-   * 从指定节点向下遍历到第一个叶子节点
+   * 从指定节点向下遍历到第一个分叉节点
    */
-  traverseToFirstLeaf(nodeId: string, callback: (node: TreeNode<T>) => void): void {
+  traverseToFirstFork(nodeId: string, callback: (node: TreeNode<T>) => void): void {
     const node = this.nodeMap.get(nodeId);
     if (!node) return;
 
     let current: TreeNode<T> = node;
     callback(current);
 
-    while (current.children.length > 0) {
+    while (current.children.length === 1) {
       current = current.children[0];
       callback(current);
     }
@@ -334,8 +374,8 @@ export class Tree<T = unknown> {
 
     // 从路径的第二个节点开始（跳过根节点），删除每个节点的兄弟节点
     for (let i = 1; i < pathToRoot.length; i++) {
-      const currentNode = pathToRoot[i] as TreeNodeImpl<T>;
-      const parentNode = currentNode.parent as TreeNodeImpl<T>;
+      const currentNode = pathToRoot[i] as TreeNode<T>;
+      const parentNode = currentNode.parent as TreeNode<T>;
 
       if (parentNode) {
         // 获取所有兄弟节点（除了当前路径节点）
@@ -344,21 +384,13 @@ export class Tree<T = unknown> {
         // 删除所有兄弟节点及其子树
         for (const sibling of siblings) {
           this.removeNodeFromMap(sibling);
-          const parentImpl = parentNode as TreeNodeImpl<T>;
+          const parentImpl = parentNode as TreeNode<T>;
           parentImpl.removeChild(sibling.id);
         }
       }
     }
 
     return true;
-  }
-
-  /**
-   * 转换为JSON对象
-   */
-  toJSON(): TreeNodeJson | null {
-    if (!this.root) return null;
-    return this.nodeToJSON(this.root);
   }
 
   // 私有方法
@@ -421,13 +453,5 @@ export class Tree<T = unknown> {
     }
 
     return maxChildHeight + 1;
-  }
-
-  private nodeToJSON(node: TreeNode<T>): TreeNodeJson {
-    return {
-      id: node.id,
-      data: node.data,
-      children: node.children.map((child) => this.nodeToJSON(child)),
-    };
   }
 }

@@ -6,32 +6,44 @@ export default function useInputText(
   onEnter: () => void,
 ) {
   const [input, setInput] = useState("");
+  const inputPlaceholder = "发送消息给 Lexzyy...";
 
-  const handleChange = useCallback(
+  const clearInput = useCallback(
+    (e?: React.MouseEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
+      setInput("");
+      if (e) {
+        (e.target as HTMLTextAreaElement).style.height = "40px";
+      }
+    },
+    [],
+  );
+
+  const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      onChange(e);
       setInput(e.target.value);
       e.target.style.height = "auto";
       e.target.style.height = Math.min(e.target.scrollHeight, 184) + "px";
+      onChange(e);
     },
     [onChange],
   );
 
-  const handleKeyDown = useCallback(
+  const handleEnter = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        setInput("");
+        clearInput(e);
         onEnter();
-        (e.target as HTMLTextAreaElement).style.height = "40px";
       }
     },
-    [onEnter],
+    [onEnter, clearInput],
   );
 
   return {
     input,
-    handleChange,
-    handleKeyDown,
+    inputPlaceholder,
+    clearInput,
+    handleInputChange,
+    handleEnter,
   };
 }

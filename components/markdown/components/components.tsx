@@ -1,6 +1,6 @@
 import React from "react";
 import MermaidRenderer from "./mermaid";
-import CodeHighlight from "./code-highlight";
+import Highlight from "./code-highlight";
 import { MarkdownComponents } from "../types";
 import "katex/dist/katex.min.css";
 
@@ -34,18 +34,17 @@ export const components: MarkdownComponents = {
   // code
   pre: ({ children }) => {
     const codeElement = React.Children.toArray(children)[0] as React.ReactElement;
-    const codeProps = codeElement.props as { className: string; children: string };
-    const match = /language-(loading-)?(\w+)/.exec(codeProps.className || "");
+    const codeProps = codeElement.props as { className: string; children: string | undefined };
+    const match = /language-(loading-)?(\w+)?/.exec(codeProps.className || "");
     const isLoading = match?.[1] === "loading-";
-    const language = match?.[2] ?? "";
-    const codeString = String(codeProps.children).replace(/\n$/, "");
+    const language = match?.[2];
+    const codeString = codeProps.children ? codeProps.children.replace(/\n$/, "") : undefined;
 
-    // Mermaid图表渲染
     if (language === "mermaid") {
-      return <MermaidRenderer chart={isLoading ? "" : codeString} loading={isLoading} />;
+      return <MermaidRenderer chart={isLoading ? "" : (codeString ?? "")} loading={isLoading} />;
     }
 
-    return <CodeHighlight codeString={codeString} language={language} />;
+    return <Highlight code={codeString} language={language} />;
   },
   code: ({ children }) => {
     return <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-sm break-all">{children}</code>;

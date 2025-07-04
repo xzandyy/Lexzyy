@@ -1,30 +1,60 @@
 import { memo } from "react";
-import { LucideIcon } from "lucide-react";
+import { Send, Square, RefreshCcw } from "lucide-react";
 
 interface ActionButtonProps {
   currentStatus: string;
-  statusConfigs: Record<string, ActionConfig>;
+  onSubmit: () => void;
+  onStop: () => void;
+  onReload: () => void;
+  disabled?: boolean;
 }
 
-const ActionButton = memo(function ActionButton({ currentStatus, statusConfigs }: ActionButtonProps) {
-  const config = statusConfigs[currentStatus];
+const ActionButton = memo(function ActionButton({
+  currentStatus,
+  onSubmit,
+  onStop,
+  onReload,
+  disabled = false,
+}: ActionButtonProps) {
+  let IconComponent;
+  let onClick;
+  let tooltip;
 
-  if (!config) {
-    return null;
+  switch (currentStatus) {
+    case "ready":
+      IconComponent = Send;
+      onClick = onSubmit;
+      tooltip = "发送消息";
+      break;
+    case "streaming":
+    case "submitted":
+      IconComponent = Square;
+      onClick = onStop;
+      tooltip = "停止生成";
+      break;
+    case "error":
+      IconComponent = RefreshCcw;
+      onClick = onReload;
+      tooltip = "重新生成";
+      break;
+    default:
+      return null;
   }
 
-  const { tooltip, icon: IconComponent, disabled, onClick } = config;
-  const isDisabled = typeof disabled === "function" ? disabled() : disabled;
-  const className = `flex items-center justify-center text-white rounded-full transition-all duration-200 p-3 w-10 h-10 ${
-    isDisabled ? "bg-gray-300 cursor-not-allowed" : "bg-black hover:bg-gray-800 active:bg-gray-900"
-  }`;
-
   return (
-    <button type="button" onClick={onClick} disabled={isDisabled} className={className} title={tooltip}>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex items-center justify-center text-white rounded-full transition-all duration-200 p-3 w-10 h-10 ${
+        disabled ? "bg-gray-300 cursor-not-allowed" : "bg-black hover:bg-gray-800 active:bg-gray-900"
+      }`}
+      title={tooltip}
+    >
       <IconComponent className="w-4 h-4" />
     </button>
   );
 });
 
 export default ActionButton;
-export type { ActionConfig, ActionButtonProps };
+export type { ActionButtonProps };

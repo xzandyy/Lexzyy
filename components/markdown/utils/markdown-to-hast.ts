@@ -29,7 +29,7 @@ function getMarkdownToHastProcessor(preset: string): MarkdownToHastProcessor {
     return processorCached;
   }
 
-  const options = getPreset(preset).markdownToHastProcessorOptions || {};
+  const options = getPreset(preset)?.markdownToHastProcessorOptions || {};
   const remarkPlugins = options.remarkPlugins || [];
   const rehypePlugins = options.rehypePlugins || [];
   const remarkRehypeOptions = options.remarkRehypeOptions;

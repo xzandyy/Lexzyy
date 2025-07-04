@@ -1,13 +1,11 @@
-import useInputText from "@/hooks/use-input-text";
-
 interface TextInputProps {
+  input: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onEnter: () => void;
+  onEnter: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   placeholder?: string;
 }
 
-export default function TextInput({ onChange, onEnter, placeholder = "" }: TextInputProps) {
-  const { input, handleChange, handleKeyDown } = useInputText(onChange, onEnter);
+export default function TextInput({ input, onChange, onEnter, placeholder = "" }: TextInputProps) {
   return (
     <div className="px-4 py-1">
       <textarea
@@ -15,8 +13,8 @@ export default function TextInput({ onChange, onEnter, placeholder = "" }: TextI
         className="w-full pt-3 pb-1 min-h-[40px] focus:outline-none resize-none text-gray-800"
         rows={1}
         value={input}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
+        onChange={onChange}
+        onKeyDown={onEnter}
       />
     </div>
   );

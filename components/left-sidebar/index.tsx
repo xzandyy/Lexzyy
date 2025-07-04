@@ -62,9 +62,11 @@ const LeftSidebar = memo(function LeftSidebar({ tabs, defaultActiveTabId }: Left
           {tabs.map((item) => (
             <TabButton
               key={item.id}
-              item={item}
+              id={item.id}
+              icon={item.icon}
+              label={item.label}
               isActive={activeTabId === item.id}
-              onClick={() => handleTabClick(item.id)}
+              onClick={handleTabClick}
             />
           ))}
         </div>

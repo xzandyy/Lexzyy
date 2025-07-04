@@ -1,117 +1,105 @@
-import MessageItem from "./message-item";
-import EmptyState from "./empty-state";
+import { memo, useCallback, useEffect, useRef } from "react";
 import { UIMessage } from "ai";
-import { IntersectionObserverProps, PlainChildrenProps, useInView } from "react-intersection-observer";
-import { createElement, memo, Ref, useCallback, useRef } from "react";
-
-type MessageRefData = {
-  node: HTMLDivElement | null;
-  index: number;
-};
+import EmptyState from "./empty-state";
+import ErrorState from "./error-state";
+import MessageItemWrapper from "./message-item-wrapper";
+import { ChatStatus } from "@/types";
 
 interface ChatListProps {
+  status: ChatStatus;
+  error: Error | undefined;
   messages: UIMessage[];
-  onActiveMessageChange: Function;
+  onAddMessageRef: (id: string, node: HTMLDivElement) => void;
+  onActiveMessageChange: (id: string, index: number) => void;
 }
 
-const ChatList = memo(function ChatList({ messages, onActiveMessageChange }: ChatListProps) {
+const ChatList = memo(function ChatList({
+  status,
+  error,
+  messages,
+  onAddMessageRef,
+  onActiveMessageChange,
+}: ChatListProps) {
   const scrollRootRef = useRef<HTMLDivElement>(null);
-  const messageRefs = useRef<Map<string, MessageRefData>>(new Map());
-  const isMessageEmpty = messages.length === 0;
+  const lastMessageRef = useRef<HTMLDivElement>(null);
 
-  const addMessageRefData = useCallback((id: string, data: MessageRefData) => {
-    if (data.node) messageRefs.current.set(id, data);
+  const inViewMessages = useRef<Map<number, string>>(new Map());
+  const activeMessage = useRef<{ id: string; index: number }>({
+    id: "system",
+    index: 0,
+  });
+
+  const handleUnmount = useCallback((index: number) => {
+    inViewMessages.current.delete(index);
   }, []);
+
+  const handleAddMessageRef = useCallback(
+    (id: string, node: HTMLDivElement | null) => {
+      if (!node) return;
+      onAddMessageRef(id, node);
+      lastMessageRef.current = node;
+    },
+    [onAddMessageRef],
+  );
+
+  useEffect(() => {
+    if (status === "submitted") {
+      lastMessageRef.current!.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [status]);
+
+  const handleInviewChange = useCallback(
+    (inView: boolean, entry: IntersectionObserverEntry, message: UIMessage, index: number) => {
+      if (inView) {
+        inViewMessages.current.set(index, message.id);
+      } else {
+        inViewMessages.current.delete(index);
+      }
+
+      if (inViewMessages.current.size > 0) {
+        let minIndex = Infinity;
+        let minId = "";
+
+        inViewMessages.current.forEach((id, index) => {
+          if (id === minId) {
+            return;
+          }
+
+          if (index < minIndex) {
+            minIndex = index;
+            minId = id;
+          }
+        });
+
+        if (minIndex !== Infinity && activeMessage.current.id !== minId) {
+          activeMessage.current = { id: minId, index: minIndex };
+          onActiveMessageChange(minId, minIndex);
+        }
+      }
+    },
+    [onActiveMessageChange],
+  );
 
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden pt-4" ref={scrollRootRef}>
-      <div className="max-w-4xl mx-auto px-6">
-        <div className="space-y-8">
-          {/* 消息列表 */}
-          {messages.map((message, index) => (
-            <MessageItem message={message} key={message.id} />
-            // <FocusInView root={scrollRootRef.current} key={message.id}>
-            //   {({ ref }) => (
-            //     <MesageRefWrapper
-            //       containerRef={ref}
-            //       anchorRef={(node) => addMessageRefData(message.id, { node, index })}
-            //     >
-            //       <MessageItem message={message} />
-            //     </MesageRefWrapper>
-            //   )}
-            // </FocusInView>
-          ))}
+      <div className="max-w-4xl mx-auto px-6 pb-8 space-y-8 [&>*:last-child]:min-h-[calc(100dvh-240px)]">
+        {messages.map((message, index) => (
+          <MessageItemWrapper
+            key={message.id}
+            index={index}
+            message={message}
+            onAddMessageRef={handleAddMessageRef}
+            root={scrollRootRef}
+            onInViewChange={handleInviewChange}
+            onUnmount={handleUnmount}
+          />
+        ))}
 
-          {/* 欢迎信息、空白占位 */}
-          {isMessageEmpty && <EmptyState />}
-          {messages.length > 0 && <div className="min-h-[20vh]"></div>}
-          {messages.length > 2 && <div className="min-h-[50vh]"></div>}
-        </div>
+        {messages.length === 0 && <EmptyState />}
+        {error && <ErrorState error={error} />}
       </div>
     </div>
   );
 });
 
 export default ChatList;
-
-function FocusInView(props: IntersectionObserverProps | PlainChildrenProps) {
-  const {
-    children,
-    root,
-    rootMargin,
-    threshold,
-    trackVisibility,
-    triggerOnce,
-    skip,
-    delay,
-    initialInView,
-    fallbackInView,
-    onChange,
-    ...rest
-  } = props;
-
-  const { ref, inView, entry } = useInView({
-    root,
-    rootMargin,
-    threshold,
-    trackVisibility,
-    triggerOnce,
-    skip,
-    delay,
-    initialInView,
-    fallbackInView,
-    onChange,
-  });
-
-  if (typeof children === "function") {
-    return children({ inView, entry, ref });
-  } else {
-    return createElement((props as PlainChildrenProps).as || "div", { ref, ...rest }, children);
-  }
-}
-
-function MesageRefWrapper({
-  children,
-  containerRef,
-  anchorRef,
-}: {
-  children: React.ReactNode;
-  containerRef?: Ref<HTMLDivElement> | undefined;
-  anchorRef?: Ref<HTMLDivElement> | undefined;
-}) {
-  return (
-    <div className="relative" ref={containerRef}>
-      <div
-        ref={anchorRef}
-        className="absolute size-0"
-        style={{
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
-      ></div>
-      {children}
-    </div>
-  );
-}

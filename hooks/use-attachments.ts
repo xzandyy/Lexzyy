@@ -1,10 +1,11 @@
 import { ChatAttachment, FileStatus, isFileSupported, processFile } from "@/lib/file-utils";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function useAttachments() {
   const [files, setFiles] = useState<ChatAttachment[]>([]);
-  const hasLoadingFiles = useMemo(() => files.some((f) => f.status === "loading"), [files]);
+  const hasFiles = files.length > 0;
+  const hasLoadingFiles = files.some((f) => f.status === "loading");
 
   const addFiles = useCallback(async (newFiles: FileList) => {
     if (newFiles.length === 0) return;
@@ -82,6 +83,7 @@ export default function useAttachments() {
 
   return {
     files,
+    hasFiles,
     hasLoadingFiles,
     addFiles,
     removeFile,
