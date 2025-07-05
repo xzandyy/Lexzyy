@@ -19,9 +19,11 @@ export default function ChatFlow({ nodes, edges, flowCSSVariables, onStyleConfig
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        minZoom={0.2}
         fitView
         fitViewOptions={{
-          padding: 0.2,
+          padding: { top: "2%", bottom: "88%" },
+          maxZoom: 0.8,
         }}
       >
         <Controls />
