@@ -7,7 +7,7 @@ interface MessageItemWrapperProps {
   index: number;
   message: UIMessage;
   onAddMessageRef: (id: string, node: HTMLDivElement | null) => void;
-  root: React.RefObject<Element | Document | null>;
+  rootRef: React.RefObject<Element | Document | null>;
   onInViewChange: (inView: boolean, entry: IntersectionObserverEntry, message: UIMessage, index: number) => void;
   onUnmount: (index: number) => void;
 }
@@ -16,12 +16,12 @@ const MessageItemWrapper = memo(function MessageItemWrapper({
   index,
   message,
   onAddMessageRef,
-  root,
+  rootRef,
   onInViewChange,
   onUnmount,
 }: MessageItemWrapperProps) {
   const { ref } = useInView({
-    root: root.current,
+    root: rootRef.current,
     rootMargin: "-64px 0px",
     onChange: (inView, entry) => onInViewChange(inView, entry, message, index),
   });

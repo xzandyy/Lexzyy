@@ -1,7 +1,6 @@
 import React, { useState, memo, useCallback } from "react";
 import { X, RotateCcw, Settings } from "lucide-react";
 import { CONFIG_GROUPS, DEFAULT_STYLE_CONFIG, StyleConfig, STYLE_CONFIG_OPTIONS } from "./types";
-import { useDebounce } from "../../hooks/use-debounce";
 
 // 滑块配置组件
 const ConfigSlider = memo<{
@@ -225,14 +224,12 @@ ConfigPanelContent.displayName = "ConfigPanelContent";
 
 // 主组件
 interface StyleConfigPanelProps {
+  styleConfig: StyleConfig;
   onStyleConfigChange: (config: StyleConfig) => void;
 }
 
-export const StyleConfigPanel = memo<StyleConfigPanelProps>(({ onStyleConfigChange }) => {
+export const StyleConfigPanel = memo<StyleConfigPanelProps>(({ styleConfig, onStyleConfigChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [styleConfig, setStyleConfig] = useState<StyleConfig>(DEFAULT_STYLE_CONFIG);
-
-  const debouncedOnChange = useDebounce(onStyleConfigChange, 100);
 
   const handleConfigChange = useCallback(
     (key: keyof StyleConfig, value: number | string | boolean) => {
@@ -240,19 +237,14 @@ export const StyleConfigPanel = memo<StyleConfigPanelProps>(({ onStyleConfigChan
         ...styleConfig,
         [key]: value,
       };
-      setStyleConfig(newConfig);
-      debouncedOnChange(newConfig);
+      onStyleConfigChange(newConfig);
     },
-    [styleConfig, debouncedOnChange],
+    [styleConfig, onStyleConfigChange],
   );
 
   const resetToDefault = useCallback(() => {
-    setStyleConfig(DEFAULT_STYLE_CONFIG);
-    // 重置时立即触发，不需要防抖
     onStyleConfigChange(DEFAULT_STYLE_CONFIG);
-    // 取消任何待处理的防抖调用
-    debouncedOnChange.cancel();
-  }, [onStyleConfigChange, debouncedOnChange]);
+  }, [onStyleConfigChange]);
 
   const togglePanel = useCallback(() => {
     setIsOpen((prev) => !prev);

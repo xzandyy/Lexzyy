@@ -21,13 +21,15 @@ const ChatList = memo(function ChatList({
   onActiveMessageChange,
 }: ChatListProps) {
   const scrollRootRef = useRef<HTMLDivElement>(null);
-  const lastMessageRef = useRef<HTMLDivElement>(null);
+  const scrollToEndRef = useRef<HTMLDivElement>(null);
 
   const inViewMessages = useRef<Map<number, string>>(new Map());
   const activeMessage = useRef<{ id: string; index: number }>({
     id: "system",
     index: 0,
   });
+
+  const isLastIsUser = messages.at(-1)!.role === "user";
 
   const handleUnmount = useCallback((index: number) => {
     inViewMessages.current.delete(index);
@@ -37,14 +39,13 @@ const ChatList = memo(function ChatList({
     (id: string, node: HTMLDivElement | null) => {
       if (!node) return;
       onAddMessageRef(id, node);
-      lastMessageRef.current = node;
     },
     [onAddMessageRef],
   );
 
   useEffect(() => {
     if (status === "submitted") {
-      lastMessageRef.current!.scrollIntoView({ behavior: "smooth" });
+      scrollToEndRef.current!.scrollIntoView({ behavior: "smooth" });
     }
   }, [status]);
 
@@ -82,14 +83,16 @@ const ChatList = memo(function ChatList({
 
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden pt-4" ref={scrollRootRef}>
-      <div className="max-w-4xl mx-auto px-6 pb-8 space-y-8 [&>*:last-child]:min-h-[calc(100dvh-240px)]">
+      <div
+        className={`max-w-4xl mx-auto px-6 pb-8 space-y-8 ${!isLastIsUser ? "[&>article:last-of-type]:min-h-[calc(100dvh-240px)]" : ""}`}
+      >
         {messages.map((message, index) => (
           <MessageItemWrapper
             key={message.id}
             index={index}
             message={message}
             onAddMessageRef={handleAddMessageRef}
-            root={scrollRootRef}
+            rootRef={scrollRootRef}
             onInViewChange={handleInviewChange}
             onUnmount={handleUnmount}
           />
@@ -97,6 +100,7 @@ const ChatList = memo(function ChatList({
 
         {messages.length === 0 && <EmptyState />}
         {error && <ErrorState error={error} />}
+        {isLastIsUser && <div ref={scrollToEndRef} className="min-h-[calc(100dvh-324px)]" />}
       </div>
     </div>
   );

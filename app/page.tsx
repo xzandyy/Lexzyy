@@ -20,6 +20,7 @@ export default function Home() {
     error,
     addMessageRefs,
     handleScrollActiveChange,
+    autoFitViewNode,
     flowElements,
     flowCSSVariables,
     handleStyleConfigChange,
@@ -32,6 +33,7 @@ export default function Home() {
       label: "对话流",
       component: (
         <ChatFlow
+          autoFitViewNode={autoFitViewNode}
           nodes={flowElements.nodes}
           edges={flowElements.edges}
           flowCSSVariables={flowCSSVariables}
@@ -39,7 +41,7 @@ export default function Home() {
         />
       ),
     }),
-    [flowElements, flowCSSVariables, handleStyleConfigChange],
+    [autoFitViewNode, flowElements, flowCSSVariables, handleStyleConfigChange],
   );
 
   const leftSidebarTabs = useMemo(() => [chatflow], [chatflow]);

@@ -19,6 +19,7 @@ const JUMP_FORK = 1 << 7;
 const RESTYLE = 1 << 8;
 const SUBMIT_AWAIT = SUBMIT | AWAIT;
 const SUBMIT_AWAIT_SETTLE_STREAM = SUBMIT | AWAIT | SETTLE | STREAM;
+const SUBMIT_AWAIT_SETTLE_STREAM_ACTIVATE_RESTYLE = SUBMIT | AWAIT | SETTLE | STREAM | ACTIVATE | RESTYLE;
 
 export default class ChatTree {
   // input
@@ -43,6 +44,7 @@ export default class ChatTree {
 
   // output
   messagesToShow: UIMessage[] = [];
+  autoFitViewNode: Node<FlowNodeData>;
   flowElements: { nodes: Node<FlowNodeData>[]; edges: Edge[] } = { nodes: [], edges: [] };
   flowCSSVariables: React.CSSProperties = {};
 
@@ -80,6 +82,7 @@ export default class ChatTree {
     });
 
     // output
+    this.autoFitViewNode = this.flowNodes.get(systemMessage.id)!;
     this.messagesToShow = [systemMessage];
     this.renewFlowElements();
     this.updateFlowCSSVariables();
@@ -264,8 +267,6 @@ export default class ChatTree {
           style: { strokeWidth: edgeWidth },
         });
       }
-
-      this.renewFlowElements();
     }
     // settle
     if (this.updateFlags & SETTLE) {
@@ -288,8 +289,6 @@ export default class ChatTree {
         ...flowEdge,
         animated: styleConfig.edgeAnimated,
       });
-
-      this.renewFlowElements();
     }
     // activate
     if (this.updateFlags & ACTIVATE) {
@@ -311,8 +310,6 @@ export default class ChatTree {
           isActive: true,
         },
       });
-
-      this.renewFlowElements();
     }
     // restyle
     if (this.updateFlags & RESTYLE) {
@@ -347,11 +344,20 @@ export default class ChatTree {
           });
         });
       }
-
+    }
+    // renew when submit/await/settle/activate/restyle
+    if (this.updateFlags & SUBMIT_AWAIT_SETTLE_STREAM_ACTIVATE_RESTYLE) {
       this.renewFlowElements();
     }
 
-    // c、update toshow //
+    // c、update autoFitViewNode //
+
+    // submit
+    if (this.updateFlags & SUBMIT) {
+      this.autoFitViewNode = this.flowNodes.get(this.newSrcMessages.at(-1)!.id)!;
+    }
+
+    // d、update toshow //
 
     // jump-node
     if (this.updateFlags & JUMP_NODE) {
@@ -376,7 +382,7 @@ export default class ChatTree {
       }
     }
 
-    // d、update css //
+    // e、update css //
 
     // restyle
     if (this.updateFlags & RESTYLE) {

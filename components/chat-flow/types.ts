@@ -14,7 +14,7 @@ export type FlowNodeData = {
   handlers: FlowNodeHandlers;
 };
 
-export type ActiveWay = "scroll" | "click";
+export type ActiveWay = "scroll" | "click" | "auto";
 
 export type ActiveNodeMethod = "activate" | "jump-fork" | "jump-node" | "init";
 

@@ -67,7 +67,6 @@ export default function useChatFlow() {
         scrollTimer.current = null;
       }
       scrollTimer.current = window.setTimeout(() => {
-        console.log("scroll");
         setActiveNodeData({ id, index, method: "activate" });
         scrollTimer.current = null;
       }, scrollGap);
@@ -81,20 +80,22 @@ export default function useChatFlow() {
       }
       if (Date.now() - lastClickTime.current > clickGap) {
         setActiveNodeData({ id, index, method: "jump-fork" });
-        console.log("jump-fork");
       } else {
         if (clickTimer.current) {
           clearTimeout(clickTimer.current);
           clickTimer.current = null;
         } else {
           setActiveNodeData({ id, index, method: "jump-node" });
-          console.log("jump-node");
         }
         clickTimer.current = window.setTimeout(() => {
           clickTimer.current = null;
         }, clickGap);
       }
       lastClickTime.current = Date.now();
+    }
+
+    if (way === "auto") {
+      setActiveNodeData({ id, index, method: "activate" });
     }
   }, []);
 
@@ -104,6 +105,13 @@ export default function useChatFlow() {
     },
     [handleActiveNodeChange],
   );
+
+  useEffect(() => {
+    if (status === "streaming" && activeNodeData.id === flow.current.messagesToShow.at(-2)!.id) {
+      const messagesToShow = flow.current.messagesToShow;
+      handleActiveNodeChange(messagesToShow.at(-1)!.id, messagesToShow.length - 1, "auto");
+    }
+  }, [activeNodeData, handleActiveNodeChange, status]);
 
   useEffect(() => {
     if (activeNodeData.method.startsWith("jump")) {
@@ -167,6 +175,7 @@ export default function useChatFlow() {
     error,
     addMessageRefs,
     handleScrollActiveChange,
+    autoFitViewNode: flow.current.autoFitViewNode,
     flowElements: flow.current.flowElements,
     flowCSSVariables: flow.current.flowCSSVariables,
     handleStyleConfigChange,
