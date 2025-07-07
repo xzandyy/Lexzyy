@@ -6,7 +6,7 @@ import ChatList from "@/components/chat-list";
 import ChatInput from "@/components/chat-input";
 import LeftSidebar from "@/components/left-sidebar";
 import ChatFlow from "@/components/chat-flow";
-import useChatFlow from "@/hooks/use-chat-flow";
+import useChats from "@/hooks/use-chats";
 
 export default function Home() {
   const {
@@ -23,7 +23,7 @@ export default function Home() {
     flowElements,
     flowCSSVariables,
     handleStyleConfigChange,
-  } = useChatFlow();
+  } = useChats();
 
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-white">

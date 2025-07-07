@@ -19,7 +19,7 @@ function createSystemMessage(content: string) {
   } as UIMessage;
 }
 
-export default function useChatFlow() {
+export default function useChats() {
   const systemMessage = createSystemMessage("你是一个AI助手");
   const {
     status,
