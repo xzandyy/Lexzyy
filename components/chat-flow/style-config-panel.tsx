@@ -1,8 +1,7 @@
-import React, { useState, memo, useCallback } from "react";
-import { X, RotateCcw, Settings } from "lucide-react";
+import React, { memo, useCallback } from "react";
+import { X, RotateCcw } from "lucide-react";
 import { CONFIG_GROUPS, DEFAULT_STYLE_CONFIG, StyleConfig, STYLE_CONFIG_OPTIONS } from "./types";
 
-// 滑块配置组件
 const ConfigSlider = memo<{
   optionKey: keyof StyleConfig;
   option: { min: number; max: number; step: number; label: string; unit: string };
@@ -39,7 +38,6 @@ const ConfigSlider = memo<{
 
 ConfigSlider.displayName = "ConfigSlider";
 
-// 选择框配置组件
 const ConfigSelect = memo<{
   optionKey: keyof StyleConfig;
   option: { options: readonly { value: string; label: string }[]; label: string };
@@ -73,7 +71,6 @@ const ConfigSelect = memo<{
 
 ConfigSelect.displayName = "ConfigSelect";
 
-// 复选框配置组件
 const ConfigCheckbox = memo<{
   optionKey: keyof StyleConfig;
   option: { label: string };
@@ -104,7 +101,6 @@ const ConfigCheckbox = memo<{
 
 ConfigCheckbox.displayName = "ConfigCheckbox";
 
-// 配置项渲染组件
 const ConfigOption = memo<{
   optionKey: keyof StyleConfig;
   styleConfig: StyleConfig;
@@ -113,17 +109,14 @@ const ConfigOption = memo<{
   const option = STYLE_CONFIG_OPTIONS[optionKey];
   const value = styleConfig[optionKey];
 
-  // 数值滑块配置
   if ("min" in option && "max" in option) {
     return <ConfigSlider optionKey={optionKey} option={option} value={value as number} onChange={onChange} />;
   }
 
-  // 选择框配置
   if ("options" in option) {
     return <ConfigSelect optionKey={optionKey} option={option} value={value as string} onChange={onChange} />;
   }
 
-  // 复选框配置
   if (typeof option.default === "boolean") {
     return <ConfigCheckbox optionKey={optionKey} option={option} value={value as boolean} onChange={onChange} />;
   }
@@ -133,7 +126,6 @@ const ConfigOption = memo<{
 
 ConfigOption.displayName = "ConfigOption";
 
-// 配置组组件
 const ConfigGroup = memo<{
   groupKey: string;
   group: { title: string; options: readonly (keyof StyleConfig)[] };
@@ -154,7 +146,6 @@ const ConfigGroup = memo<{
 
 ConfigGroup.displayName = "ConfigGroup";
 
-// 面板头部组件
 const PanelHeader = memo<{
   onReset: () => void;
   onClose: () => void;
@@ -183,24 +174,6 @@ const PanelHeader = memo<{
 
 PanelHeader.displayName = "PanelHeader";
 
-// 设置按钮组件
-const SettingsButton = memo<{
-  onClick: () => void;
-}>(({ onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      className="absolute top-4 right-4 p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 hover:border-gray-300 z-30"
-      title="样式设置"
-    >
-      <Settings size={20} className="text-gray-600" />
-    </button>
-  );
-});
-
-SettingsButton.displayName = "SettingsButton";
-
-// 配置面板内容组件
 const ConfigPanelContent = memo<{
   styleConfig: StyleConfig;
   onChange: (key: keyof StyleConfig, value: number | string | boolean) => void;
@@ -222,15 +195,14 @@ const ConfigPanelContent = memo<{
 
 ConfigPanelContent.displayName = "ConfigPanelContent";
 
-// 主组件
 interface StyleConfigPanelProps {
   styleConfig: StyleConfig;
   onStyleConfigChange: (config: StyleConfig) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export const StyleConfigPanel = memo<StyleConfigPanelProps>(({ styleConfig, onStyleConfigChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
+export const StyleConfigPanel = memo<StyleConfigPanelProps>(({ styleConfig, onStyleConfigChange, isOpen, onClose }) => {
   const handleConfigChange = useCallback(
     (key: keyof StyleConfig, value: number | string | boolean) => {
       const newConfig = {
@@ -246,17 +218,9 @@ export const StyleConfigPanel = memo<StyleConfigPanelProps>(({ styleConfig, onSt
     onStyleConfigChange(DEFAULT_STYLE_CONFIG);
   }, [onStyleConfigChange]);
 
-  const togglePanel = useCallback(() => {
-    setIsOpen((prev) => !prev);
-  }, []);
-
-  const closePanel = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
   const handleOverlayClick = useCallback(() => {
-    setIsOpen(false);
-  }, []);
+    onClose();
+  }, [onClose]);
 
   const handleContentClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -264,8 +228,6 @@ export const StyleConfigPanel = memo<StyleConfigPanelProps>(({ styleConfig, onSt
 
   return (
     <>
-      <SettingsButton onClick={togglePanel} />
-
       {isOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4" onClick={handleOverlayClick}>
           <div className="pointer-events-auto" onClick={handleContentClick}>
@@ -273,7 +235,7 @@ export const StyleConfigPanel = memo<StyleConfigPanelProps>(({ styleConfig, onSt
               styleConfig={styleConfig}
               onChange={handleConfigChange}
               onReset={resetToDefault}
-              onClose={closePanel}
+              onClose={onClose}
             />
           </div>
         </div>
