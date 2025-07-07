@@ -19,7 +19,7 @@ const TabButton = memo(function TabButton({
   return (
     <button
       onClick={() => onClick(id)}
-      className={`p-2 rounded transition-colors ${isActive ? "bg-blue-100 text-blue-600" : "text-gray-600 hover:bg-gray-100"}`}
+      className={`p-2 cursor-pointer rounded transition-colors ${isActive ? "bg-blue-100 text-blue-600" : "text-gray-600 hover:bg-gray-100"}`}
       title={label}
     >
       <Icon className="w-5 h-5" />

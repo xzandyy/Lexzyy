@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { Network } from "lucide-react";
 import ChatHeader from "@/components/chat-header";
 import ChatList from "@/components/chat-list";
@@ -26,31 +25,29 @@ export default function Home() {
     handleStyleConfigChange,
   } = useChatFlow();
 
-  const chatflow = useMemo(
-    () => ({
-      id: "chat-flow",
-      icon: Network,
-      label: "对话流",
-      component: (
-        <ChatFlow
-          autoFitViewNode={autoFitViewNode}
-          nodes={flowElements.nodes}
-          edges={flowElements.edges}
-          flowCSSVariables={flowCSSVariables}
-          onStyleConfigChange={handleStyleConfigChange}
-        />
-      ),
-    }),
-    [autoFitViewNode, flowElements, flowCSSVariables, handleStyleConfigChange],
-  );
-
-  const leftSidebarTabs = useMemo(() => [chatflow], [chatflow]);
-
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-white">
-      <LeftSidebar defaultActiveTabId="chat-flow" tabs={leftSidebarTabs} />
+      <LeftSidebar
+        defaultActiveTabId="chat-flow"
+        tabs={[
+          {
+            id: "chat-flow",
+            icon: Network,
+            label: "对话流",
+            render: () => (
+              <ChatFlow
+                autoFitViewNode={autoFitViewNode}
+                nodes={flowElements.nodes}
+                edges={flowElements.edges}
+                flowCSSVariables={flowCSSVariables}
+                onStyleConfigChange={handleStyleConfigChange}
+              />
+            ),
+          },
+        ]}
+      />
 
-      <div className="pl-14 flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0">
         <ChatHeader status={status} />
 
         <ChatList

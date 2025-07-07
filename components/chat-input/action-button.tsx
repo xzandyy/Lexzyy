@@ -47,7 +47,7 @@ const ActionButton = memo(function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={`flex items-center justify-center text-white rounded-full transition-all duration-200 p-3 w-10 h-10 ${
-        disabled ? "bg-gray-300 cursor-not-allowed" : "bg-black hover:bg-gray-800 active:bg-gray-900"
+        disabled ? "bg-gray-300 cursor-not-allowed" : "bg-black hover:bg-gray-800 active:bg-gray-900 cursor-pointer"
       }`}
       title={tooltip}
     >

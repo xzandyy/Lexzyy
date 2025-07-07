@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --breakpoint-ml: 56rem; /* 896px - 介于 md(48rem/768px) 和 lg(64rem/1024px) 之间 */
+}
+
 /* 自定义输入框滚动条样式 */
 textarea::-webkit-scrollbar {
   width: 6px;

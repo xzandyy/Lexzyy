@@ -58,7 +58,7 @@ function ChatFlowInner({ autoFitViewNode, nodes, edges, flowCSSVariables, onStyl
           minZoom={0.2}
           fitView
           fitViewOptions={{
-            padding: { top: "2%", bottom: "88%" },
+            padding: { bottom: "80%" },
             maxZoom: shareConfigs.zoom,
           }}
         >
