@@ -1,6 +1,7 @@
 import { LucideIcon, Menu } from "lucide-react";
 import { ReactNode, useState, useCallback } from "react";
 import { motion } from "framer-motion";
+import { KeepAlive } from "@/components/common";
 import TabButton from "./tab-button";
 
 export interface LeftSidebarProps {
@@ -10,14 +11,13 @@ export interface LeftSidebarProps {
     icon: LucideIcon;
     label: string;
     render: () => ReactNode;
+    keepAlive?: boolean; // 是否保持组件状态，避免重新渲染
   }[];
 }
 
 export default function LeftSidebar({ tabs, defaultActiveTabId }: LeftSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTabId, setActiveTabId] = useState<string | null>(defaultActiveTabId);
-
-  const currentItem = tabs.find((item) => item.id === activeTabId);
 
   const handleToggleCollapse = () => {
     setIsCollapsed((prev) => !prev);
@@ -74,7 +74,19 @@ export default function LeftSidebar({ tabs, defaultActiveTabId }: LeftSidebarPro
         </div>
 
         {/* content */}
-        <div className="flex-1 flex flex-col h-full">{currentItem && currentItem.render()}</div>
+        <div className="flex-1 flex flex-col h-full">
+          {tabs.map((tab) => (
+            <KeepAlive
+              key={tab.id}
+              cacheKey={`sidebar-tab-${tab.id}`}
+              active={activeTabId === tab.id}
+              enabled={tab.keepAlive}
+              immediate={false}
+            >
+              {tab.render}
+            </KeepAlive>
+          ))}
+        </div>
       </div>
     </motion.div>
   );

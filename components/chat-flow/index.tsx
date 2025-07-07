@@ -3,7 +3,7 @@ import { ReactFlow, Controls, Edge, Node, useReactFlow, ReactFlowProvider } from
 import { Palette, Crosshair } from "lucide-react";
 import { nodeTypes } from "./chat-node";
 import { StyleConfigPanel } from "./style-config-panel";
-import { Button } from "@/components/common";
+import { Button, PanelHeader } from "@/components/common";
 import type { StyleConfig } from "./types";
 import { DEFAULT_STYLE_CONFIG } from "./types";
 import "@xyflow/react/dist/style.css";
@@ -74,15 +74,10 @@ function ChatFlowInner({ autoFitViewNode, nodes, edges, flowCSSVariables, onStyl
 
   return (
     <div className="w-full h-full relative flex flex-col" style={flowCSSVariables}>
-      <div className="h-12 flex items-center justify-between px-4 border-b border-gray-200">
-        <div className="flex items-center">
-          <h2 className="text-sm font-medium text-gray-800">对话流</h2>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button icon={Crosshair} variant="outline" size="sm" title="定位" onClick={quickLocate} />
-          <Button icon={Palette} variant="outline" size="sm" title="样式" onClick={toggleStylePanel} />
-        </div>
-      </div>
+      <PanelHeader label="对话流">
+        <Button icon={Crosshair} variant="outline" size="sm" title="定位" onClick={quickLocate} />
+        <Button icon={Palette} variant="outline" size="sm" title="样式" onClick={toggleStylePanel} />
+      </PanelHeader>
 
       <div ref={containerRef} className="w-full flex-1">
         <ReactFlow

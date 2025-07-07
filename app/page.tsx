@@ -1,11 +1,12 @@
 "use client";
 
-import { Network } from "lucide-react";
+import { Network, Settings } from "lucide-react";
 import ChatHeader from "@/components/chat-header";
 import ChatList from "@/components/chat-list";
 import ChatInput from "@/components/chat-input";
 import LeftSidebar from "@/components/left-sidebar";
 import ChatFlow from "@/components/chat-flow";
+import SettingsComponent from "@/components/settings";
 import useChats from "@/hooks/use-chats";
 
 export default function Home() {
@@ -34,6 +35,7 @@ export default function Home() {
             id: "chat-flow",
             icon: Network,
             label: "对话流",
+            keepAlive: true,
             render: () => (
               <ChatFlow
                 autoFitViewNode={autoFitViewNode}
@@ -43,6 +45,13 @@ export default function Home() {
                 onStyleConfigChange={handleStyleConfigChange}
               />
             ),
+          },
+          {
+            id: "settings",
+            icon: Settings,
+            label: "设置",
+            keepAlive: true,
+            render: () => <SettingsComponent />,
           },
         ]}
       />
