@@ -1,5 +1,6 @@
 import { Suspense, memo } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useLocale } from "@/hooks/use-locale";
 import mermaid from "mermaid";
 
 mermaid.initialize({
@@ -61,12 +62,13 @@ const MermaidContent = memo(function MermaidContent({ chart }: { chart: string }
 });
 
 function MermaidFallback() {
+  const { t } = useLocale();
   return (
     <div className="my-4 overflow-x-auto">
       <div className="flex justify-center items-center min-h-48 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="text-blue-600 text-sm flex items-center gap-2">
           <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          正在加载图表...
+          {t.markdown.loadingChart}
         </div>
       </div>
     </div>

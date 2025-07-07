@@ -1,6 +1,7 @@
 import React, { memo, useCallback } from "react";
 import { X, RotateCcw } from "lucide-react";
-import { CONFIG_GROUPS, DEFAULT_STYLE_CONFIG, StyleConfig, STYLE_CONFIG_OPTIONS } from "./types";
+import { useLocale } from "@/hooks/use-locale";
+import { DEFAULT_STYLE_CONFIG, StyleConfig, useStyleConfigOptions, useConfigGroups } from "./types";
 
 const ConfigSlider = memo<{
   optionKey: keyof StyleConfig;
@@ -106,7 +107,8 @@ const ConfigOption = memo<{
   styleConfig: StyleConfig;
   onChange: (key: keyof StyleConfig, value: number | string | boolean) => void;
 }>(({ optionKey, styleConfig, onChange }) => {
-  const option = STYLE_CONFIG_OPTIONS[optionKey];
+  const styleConfigOptions = useStyleConfigOptions();
+  const option = styleConfigOptions[optionKey];
   const value = styleConfig[optionKey];
 
   if ("min" in option && "max" in option) {
@@ -150,14 +152,15 @@ const PanelHeader = memo<{
   onReset: () => void;
   onClose: () => void;
 }>(({ onReset, onClose }) => {
+  const { t } = useLocale();
   return (
     <div className="flex items-center justify-between p-3 border-b bg-gray-50 rounded-t-lg">
-      <h3 className="text-sm font-semibold text-gray-900">样式配置</h3>
+      <h3 className="text-sm font-semibold text-gray-900">{t.flow.styleConfig}</h3>
       <div className="flex items-center gap-1">
         <button
           onClick={onReset}
           className="p-1 hover:bg-gray-200 rounded text-gray-500 hover:text-gray-700 transition-colors"
-          title="重置为默认值"
+          title={t.flow.resetToDefault}
         >
           <RotateCcw size={14} />
         </button>
@@ -180,12 +183,14 @@ const ConfigPanelContent = memo<{
   onReset: () => void;
   onClose: () => void;
 }>(({ styleConfig, onChange, onReset, onClose }) => {
+  const configGroups = useConfigGroups();
+
   return (
     <div className="w-80 bg-white rounded-lg shadow-xl border border-gray-200 max-h-[80vh] overflow-y-auto">
       <PanelHeader onReset={onReset} onClose={onClose} />
 
       <div className="p-3 space-y-4">
-        {Object.entries(CONFIG_GROUPS).map(([groupKey, group]) => (
+        {Object.entries(configGroups).map(([groupKey, group]) => (
           <ConfigGroup key={groupKey} groupKey={groupKey} group={group} styleConfig={styleConfig} onChange={onChange} />
         ))}
       </div>

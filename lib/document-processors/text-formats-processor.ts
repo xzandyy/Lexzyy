@@ -9,7 +9,7 @@ async function extractTextFromFile(file: File, formatName: string): Promise<stri
       throw new Error(`${formatName}文件中没有内容`);
     }
 
-    return `${formatName}文档 "${file.name}" 内容:\n\n${text}`;
+    return `${formatName} document "${file.name}" content:\n\n${text}`;
   } catch (error) {
     console.error(`${formatName}解析错误:`, error);
     throw new Error(`${formatName}文件解析失败: ${error instanceof Error ? error.message : "未知错误"}`);
@@ -34,10 +34,10 @@ export async function extractTextFromJSON(file: File): Promise<string> {
     try {
       const parsed = JSON.parse(text);
       const formatted = JSON.stringify(parsed, null, 2);
-      return `JSON文档 "${file.name}" 内容:\n\n${formatted}`;
+      return `JSON document "${file.name}" content:\n\n${formatted}`;
     } catch (jsonError) {
       // 如果JSON解析失败，返回原始文本
-      return `JSON文档 "${file.name}" 内容 (格式可能有误):\n\n${text} ${jsonError}`;
+      return `JSON document "${file.name}" content (format may be incorrect):\n\n${text} ${jsonError}`;
     }
   } catch (error) {
     console.error("JSON解析错误:", error);

@@ -2,12 +2,14 @@ import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText } from "lucide-react";
 import useDragDropFiles from "@/hooks/use-drag-drop-files";
+import { useLocale } from "@/hooks/use-locale";
 
 interface DragDropOverlayProps {
   onFilesDrop: (files: FileList) => void;
 }
 
 const DragDropOverlay = memo(function DragDropOverlay({ onFilesDrop }: DragDropOverlayProps) {
+  const { t } = useLocale();
   const { isFilesDragOver } = useDragDropFiles(onFilesDrop);
 
   return (
@@ -42,9 +44,9 @@ const DragDropOverlay = memo(function DragDropOverlay({ onFilesDrop }: DragDropO
                 </div>
               </div>
 
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">拖拽文件到这里</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t.chat.dragDropFiles}</h3>
 
-              <p className="text-gray-600 mb-4">支持图片、文本文件、PDF等格式</p>
+              <p className="text-gray-600 mb-4">{t.chat.dragDropDescription}</p>
             </div>
           </motion.div>
         </motion.div>

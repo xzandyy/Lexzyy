@@ -4,6 +4,7 @@ import { Palette, Crosshair } from "lucide-react";
 import { nodeTypes } from "./chat-node";
 import { StyleConfigPanel } from "./style-config-panel";
 import { Button, PanelHeader } from "@/components/common";
+import { useLocale } from "@/hooks/use-locale";
 import type { StyleConfig } from "./types";
 import { DEFAULT_STYLE_CONFIG } from "./types";
 import "@xyflow/react/dist/style.css";
@@ -22,6 +23,7 @@ const shareConfigs = {
 };
 
 function ChatFlowInner({ autoFitViewNode, nodes, edges, flowCSSVariables, onStyleConfigChange }: ChatFlowProps) {
+  const { t } = useLocale();
   const reactFlowInstance = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
   const [styleConfig, setStyleConfig] = useState<StyleConfig>(DEFAULT_STYLE_CONFIG);
@@ -74,9 +76,9 @@ function ChatFlowInner({ autoFitViewNode, nodes, edges, flowCSSVariables, onStyl
 
   return (
     <div className="w-full h-full relative flex flex-col" style={flowCSSVariables}>
-      <PanelHeader label="对话流">
-        <Button icon={Crosshair} variant="outline" size="sm" title="定位" onClick={quickLocate} />
-        <Button icon={Palette} variant="outline" size="sm" title="样式" onClick={toggleStylePanel} />
+      <PanelHeader label={t.flow.title}>
+        <Button icon={Crosshair} variant="outline" size="sm" title={t.flow.locate} onClick={quickLocate} />
+        <Button icon={Palette} variant="outline" size="sm" title={t.flow.style} onClick={toggleStylePanel} />
       </PanelHeader>
 
       <div ref={containerRef} className="w-full flex-1">

@@ -23,8 +23,8 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     }
 
     // 格式化输出，添加页面信息
-    let formattedText = `PDF文档 "${file.name}" 内容:\n\n`;
-    formattedText += `总页数: ${data.numpages}\n\n`;
+    let formattedText = `PDF file "${file.name}" content:\n\n`;
+    formattedText += `Total pages: ${data.numpages}\n\n`;
     formattedText += data.text;
 
     return formattedText.trim();

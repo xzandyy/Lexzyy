@@ -6,6 +6,7 @@ import AttachmentButton from "./attachment-button";
 import DragDropOverlay from "./drag-drop-overlay";
 import useAttachments from "@/hooks/use-attachments";
 import useInputText from "@/hooks/use-input-text";
+import { useLocale } from "@/hooks/use-locale";
 import { ChatRequestOptions } from "ai";
 
 interface ChatInputProps {
@@ -17,6 +18,7 @@ interface ChatInputProps {
 }
 
 const ChatInput = memo(function ChatInput({ status, onInputChange, onSubmit, onStop, onReload }: ChatInputProps) {
+  const { t } = useLocale();
   const { files, hasFiles, hasLoadingFiles, addFiles, removeFile, retryFile, clearAllFiles, getFileListForSubmit } =
     useAttachments();
 
@@ -29,10 +31,7 @@ const ChatInput = memo(function ChatInput({ status, onInputChange, onSubmit, onS
     }
   }, [onSubmit, getFileListForSubmit]);
 
-  const { input, inputPlaceholder, handleInputChange, handleEnter, clearInput } = useInputText(
-    onInputChange,
-    submitWithAttachments,
-  );
+  const { input, handleInputChange, handleEnter, clearInput } = useInputText(onInputChange, submitWithAttachments);
 
   const handleSubmit = useCallback(() => {
     submitWithAttachments();
@@ -60,7 +59,7 @@ const ChatInput = memo(function ChatInput({ status, onInputChange, onSubmit, onS
               input={input}
               onChange={handleInputChange}
               onEnter={handleEnter}
-              placeholder={inputPlaceholder}
+              placeholder={t.chat.placeholder}
             />
             <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/50">
               <div className="flex items-center justify-between">

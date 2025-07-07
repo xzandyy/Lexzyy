@@ -1,4 +1,126 @@
-export interface Dictionary {}
+export interface Dictionary {
+  common: {
+    loading: string;
+    error: string;
+    success: string;
+    confirm: string;
+    cancel: string;
+    save: string;
+    delete: string;
+    edit: string;
+    add: string;
+    search: string;
+    warning: string;
+    info: string;
+  };
+  settings: {
+    title: string;
+    language: string;
+    selectLanguage: string;
+    currentLanguage: string;
+    noOptions: string;
+  };
+  chat: {
+    input: string;
+    send: string;
+    stop: string;
+    reload: string;
+    empty: string;
+    error: string;
+    placeholder: string;
+    sendMessage: string;
+    stopGeneration: string;
+    regenerate: string;
+    addAttachment: string;
+    dragDropFiles: string;
+    dragDropDescription: string;
+    clearAllFiles: string;
+    processingFiles: string;
+    retry: string;
+    unsupportedFileType: string;
+    processingFailed: string;
+    retryFailed: string;
+    waitingForReply: string;
+    replying: string;
+    online: string;
+  };
+  flow: {
+    locate: string;
+    style: string;
+    styleConfig: string;
+    resetToDefault: string;
+    nodeSize: string;
+    layoutSpacing: string;
+    typography: string;
+    edgeStyle: string;
+    width: string;
+    height: string;
+    horizontalSpacing: string;
+    verticalSpacing: string;
+    fontSize: string;
+    lineHeight: string;
+    maxCharacters: string;
+    edgeWidth: string;
+    edgeType: string;
+    edgeAnimated: string;
+    default: string;
+    bezierCurve: string;
+    straight: string;
+    step: string;
+    smoothStep: string;
+    title: string;
+  };
+  list: {
+    startNewChat: string;
+    chatDescription: string;
+    errorOccurred: string;
+    unknownError: string;
+  };
+  markdown: {
+    loadingChart: string;
+  };
+  documents: {
+    pdfDocument: string;
+    wordDocument: string;
+    wordDocumentDocx: string;
+    wordDocumentDoc: string;
+    excelWorkbook: string;
+    excelWorkbookXlsx: string;
+    excelWorkbookXls: string;
+    powerpointPresentation: string;
+    powerpointPresentationPptx: string;
+    powerpointPresentationPpt: string;
+    xmlDocument: string;
+    xmlDocumentXml: string;
+    jsonDataFile: string;
+    jsonDataFileJson: string;
+    xhtmlDocument: string;
+    xhtmlDocumentXhtml: string;
+    latexDocument: string;
+    latexDocumentTex: string;
+    texDocument: string;
+    texDocumentTex: string;
+    yamlConfigFile: string;
+    yamlConfigFileYml: string;
+    yamlConfigFileYaml: string;
+    yamlConfigFileYmlYaml: string;
+    rssFeed: string;
+    rssFeedRss: string;
+    atomFeed: string;
+    atomFeedAtom: string;
+  };
+  sidebar: {
+    expandCollapse: string;
+  };
+  attachment: {
+    attachment: string;
+    downloadFile: string;
+  };
+  navigation: {
+    chatFlow: string;
+    settings: string;
+  };
+}
 
 export const localeNames = {
   "zh-CN": "中文",

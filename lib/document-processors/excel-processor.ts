@@ -19,7 +19,7 @@ export async function extractTextFromExcel(file: File): Promise<string> {
 
       // 添加工作表标题
       if (workbook.SheetNames.length > 1) {
-        allText += `\n=== 工作表: ${sheetName} ===\n`;
+        allText += `\n=== Sheet: ${sheetName} ===\n`;
       }
 
       try {

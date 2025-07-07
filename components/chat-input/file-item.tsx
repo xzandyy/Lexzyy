@@ -1,5 +1,6 @@
 import { X, FileText, Loader2, AlertCircle } from "lucide-react";
 import { ChatAttachment } from "@/lib/file-utils";
+import { useLocale } from "@/hooks/use-locale";
 
 function formatFileSize(bytes: number) {
   if (bytes === 0) return "0 B";
@@ -15,6 +16,7 @@ interface FileItemProps {
 }
 
 export default function FileItem({ file, onRemove, onRetry }: FileItemProps) {
+  const { t } = useLocale();
   const filename = file.originalName;
   const size = formatFileSize(file.file.size);
   const fileIsLoading = file.status === "loading";
@@ -42,9 +44,9 @@ export default function FileItem({ file, onRemove, onRetry }: FileItemProps) {
             type="button"
             onClick={handleRetry}
             className="text-xs text-red-600 hover:text-red-800 underline"
-            title={file.error || "重试"}
+            title={file.error || t.chat.retry}
           >
-            重试
+            {t.chat.retry}
           </button>
         </div>
       )}

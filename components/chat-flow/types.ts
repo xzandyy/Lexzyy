@@ -1,4 +1,5 @@
 import { UIMessage } from "ai";
+import { useLocale } from "@/hooks/use-locale";
 
 export type FlowNodeHandlers = {
   onNodeClick: (id: string, index: number) => void;
@@ -43,6 +44,116 @@ export type StyleConfig = {
   edgeAnimated: boolean;
 };
 
+export function useStyleConfigOptions() {
+  const { t } = useLocale();
+
+  return {
+    nodeWidth: {
+      min: 1,
+      max: 300,
+      step: 1,
+      default: 180,
+      label: t.flow.width,
+      unit: "px",
+    },
+    nodeHeight: {
+      min: 1,
+      max: 200,
+      step: 1,
+      default: 120,
+      label: t.flow.height,
+      unit: "px",
+    },
+    horizontalSpacing: {
+      min: 120,
+      max: 400,
+      step: 1,
+      default: 200,
+      label: t.flow.horizontalSpacing,
+      unit: "px",
+    },
+    verticalSpacing: {
+      min: 50,
+      max: 300,
+      step: 1,
+      default: 150,
+      label: t.flow.verticalSpacing,
+      unit: "px",
+    },
+    fontSize: {
+      min: 8,
+      max: 24,
+      step: 0.1,
+      default: 16,
+      label: t.flow.fontSize,
+      unit: "px",
+    },
+    lineHeight: {
+      min: 1,
+      max: 2,
+      step: 0.01,
+      default: 1.5,
+      label: t.flow.lineHeight,
+      unit: "",
+    },
+    maxCharacters: {
+      min: 0,
+      max: 200,
+      step: 1,
+      default: 50,
+      label: t.flow.maxCharacters,
+      unit: "",
+    },
+    edgeWidth: {
+      min: 1,
+      max: 10,
+      step: 0.5,
+      default: 2,
+      label: t.flow.edgeWidth,
+      unit: "px",
+    },
+    edgeType: {
+      options: [
+        { value: "default", label: t.flow.default },
+        { value: "simplebezier", label: t.flow.bezierCurve },
+        { value: "straight", label: t.flow.straight },
+        { value: "step", label: t.flow.step },
+        { value: "smoothstep", label: t.flow.smoothStep },
+      ],
+      default: "default",
+      label: t.flow.edgeType,
+    },
+    edgeAnimated: {
+      default: false,
+      label: t.flow.edgeAnimated,
+    },
+  } as const;
+}
+
+export function useConfigGroups() {
+  const { t } = useLocale();
+
+  return {
+    nodeSize: {
+      title: t.flow.nodeSize,
+      options: ["nodeWidth", "nodeHeight"] as const,
+    },
+    spacing: {
+      title: t.flow.layoutSpacing,
+      options: ["horizontalSpacing", "verticalSpacing"] as const,
+    },
+    typography: {
+      title: t.flow.typography,
+      options: ["fontSize", "lineHeight", "maxCharacters"] as const,
+    },
+    edges: {
+      title: t.flow.edgeStyle,
+      options: ["edgeWidth", "edgeType", "edgeAnimated"] as const,
+    },
+  } as const;
+}
+
+// 为了向后兼容，保留静态版本
 export const STYLE_CONFIG_OPTIONS = {
   nodeWidth: {
     min: 1,
@@ -98,7 +209,7 @@ export const STYLE_CONFIG_OPTIONS = {
     step: 1,
     default: 50,
     label: "最大字符数",
-    unit: "字符",
+    unit: "",
   },
   edgeWidth: {
     min: 1,

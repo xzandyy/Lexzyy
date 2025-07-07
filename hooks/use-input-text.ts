@@ -6,7 +6,6 @@ export default function useInputText(
   onEnter: () => void,
 ) {
   const [input, setInput] = useState("");
-  const inputPlaceholder = "发送消息给 Lexzyy...";
 
   const clearInput = useCallback(
     (e?: React.MouseEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -41,7 +40,6 @@ export default function useInputText(
 
   return {
     input,
-    inputPlaceholder,
     clearInput,
     handleInputChange,
     handleEnter,

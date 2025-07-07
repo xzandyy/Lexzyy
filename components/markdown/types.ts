@@ -6,7 +6,6 @@ import type { Root as MdastRoot } from "mdast";
 
 export type { UnifiedPluggableList, RemarkRehypeOptions, HastRoot, MdastRoot };
 
-// 组件选项
 export interface MarkdowndProps {
   uid: string;
   preset: string;
@@ -18,7 +17,6 @@ export interface MarkdownChunkProps {
   preset: string;
 }
 
-// 分段
 export type MarkdownChunk = {
   type: MarkdownLineType;
   content: string;
@@ -31,7 +29,6 @@ export type MarkdownCharMatcher = {
   handler: MarkdownLineType | ((line: string, char: string, index: number) => MarkdownLineType);
 };
 
-// 预设
 export type MarkdownPreset = {
   markdownToHastProcessorOptions?: MarkdownToHastProcessorOptions;
   markdownComponents?: MarkdownComponents;
@@ -53,7 +50,6 @@ export type MarkdownComponentExtraProps = {
   node?: Element;
 };
 
-// markdown -> hast
 export type MarkdownToHastProcessor = Processor<MdastRoot, MdastExtendedRoot, HastRoot, undefined, undefined>;
 
 export type MdastExtendedRoot = MdastRoot & {

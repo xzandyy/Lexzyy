@@ -38,10 +38,10 @@ export async function extractTextFromPowerPoint(file: File): Promise<string> {
         throw new Error("PowerPoint文档中没有幻灯片或可提取的内容");
       }
 
-      let extractedText = `PowerPoint演示文稿 "${file.name}" 内容:\n\n`;
+      let extractedText = `PowerPoint presentation "${file.name}" content:\n\n`;
 
       slides.forEach((slide, index) => {
-        extractedText += `=== 幻灯片 ${index + 1} ===\n`;
+        extractedText += `=== Slide ${index + 1} ===\n`;
 
         if (slide.text && slide.text.length > 0) {
           // 过滤空白文本并合并
@@ -53,15 +53,15 @@ export async function extractTextFromPowerPoint(file: File): Promise<string> {
           if (slideText) {
             extractedText += slideText + "\n\n";
           } else {
-            extractedText += "[此幻灯片没有文本内容]\n\n";
+            extractedText += "[This slide has no text content]\n\n";
           }
         } else {
-          extractedText += "[此幻灯片没有文本内容]\n\n";
+          extractedText += "[This slide has no text content]\n\n";
         }
       });
 
       // 检查是否有有效内容
-      if (extractedText.replace(/PowerPoint演示文稿[\s\S]*?内容:\s*/, "").trim().length === 0) {
+      if (extractedText.replace(/PowerPoint presentation[\s\S]*?content:\s*/, "").trim().length === 0) {
         throw new Error("PowerPoint文档中没有可提取的文本内容");
       }
 
@@ -70,14 +70,14 @@ export async function extractTextFromPowerPoint(file: File): Promise<string> {
 
     // 对于PPT文件，目前只返回基本信息
     if (isPpt) {
-      return `PowerPoint文档 "${file.name}" 已处理完成。
+      return `PowerPoint document "${file.name}" has been processed.
       
-文件信息：
-- 文件名: ${file.name}
-- 文件大小: ${(file.size / 1024 / 1024).toFixed(2)} MB
-- 文件类型: ${file.type}
+File information:
+- File name: ${file.name}
+- File size: ${(file.size / 1024 / 1024).toFixed(2)} MB
+- File type: ${file.type}
 
-注意：旧版PPT格式的文本提取功能有限。建议将文件转换为PPTX格式以获得更好的文本提取效果。`;
+Note: The text extraction for old PPT format is limited. It is recommended to convert the file to PPTX format for better text extraction.`;
     }
 
     throw new Error("不支持的PowerPoint文件格式");

@@ -7,9 +7,11 @@ import ChatInput from "@/components/chat-input";
 import LeftSidebar from "@/components/left-sidebar";
 import ChatFlow from "@/components/chat-flow";
 import SettingsComponent from "@/components/settings";
+import { useLocale } from "@/hooks/use-locale";
 import useChats from "@/hooks/use-chats";
 
 export default function Home() {
+  const { t } = useLocale();
   const {
     status,
     handleInputChange,
@@ -34,7 +36,7 @@ export default function Home() {
           {
             id: "chat-flow",
             icon: Network,
-            label: "对话流",
+            label: t.navigation.chatFlow,
             keepAlive: true,
             render: () => (
               <ChatFlow
@@ -49,7 +51,7 @@ export default function Home() {
           {
             id: "settings",
             icon: Settings,
-            label: "设置",
+            label: t.navigation.settings,
             keepAlive: true,
             render: () => <SettingsComponent />,
           },

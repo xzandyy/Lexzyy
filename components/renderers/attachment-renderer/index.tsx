@@ -2,8 +2,11 @@ import type { Attachment } from "ai";
 import { FileText, Download } from "lucide-react";
 import Image from "next/image";
 import { memo } from "react";
+import { useLocale } from "@/hooks/use-locale";
 
 const AttachmentRenderer = memo(function AttachmentRenderer({ attachments }: { attachments?: Attachment[] }) {
+  const { t } = useLocale();
+
   if (!attachments || attachments.length === 0) return null;
 
   return (
@@ -14,7 +17,7 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachments }: { a
             <div className="relative h-64">
               <Image
                 src={attachment.url}
-                alt={attachment.name || `附件 ${index + 1}`}
+                alt={attachment.name || `${t.attachment.attachment} ${index + 1}`}
                 fill
                 className="object-contain"
               />
@@ -24,7 +27,7 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachments }: { a
               <FileText className="w-5 h-5 text-gray-600" />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-gray-900 truncate">
-                  {attachment.name || `附件 ${index + 1}`}
+                  {attachment.name || `${t.attachment.attachment} ${index + 1}`}
                 </div>
                 <div className="text-xs text-gray-500">{attachment.contentType}</div>
               </div>
@@ -33,7 +36,7 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachments }: { a
                   href={attachment.url}
                   download={attachment.name}
                   className="text-gray-600 hover:text-gray-800"
-                  title="下载文件"
+                  title={t.attachment.downloadFile}
                 >
                   <Download className="w-4 h-4" />
                 </a>

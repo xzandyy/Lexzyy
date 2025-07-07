@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Send, Square, RefreshCcw } from "lucide-react";
+import { useLocale } from "@/hooks/use-locale";
 
 interface ActionButtonProps {
   currentStatus: string;
@@ -16,6 +17,7 @@ const ActionButton = memo(function ActionButton({
   onReload,
   disabled = false,
 }: ActionButtonProps) {
+  const { t } = useLocale();
   let IconComponent;
   let onClick;
   let tooltip;
@@ -24,18 +26,18 @@ const ActionButton = memo(function ActionButton({
     case "ready":
       IconComponent = Send;
       onClick = onSubmit;
-      tooltip = "发送消息";
+      tooltip = t.chat.sendMessage;
       break;
     case "streaming":
     case "submitted":
       IconComponent = Square;
       onClick = onStop;
-      tooltip = "停止生成";
+      tooltip = t.chat.stopGeneration;
       break;
     case "error":
       IconComponent = RefreshCcw;
       onClick = onReload;
-      tooltip = "重新生成";
+      tooltip = t.chat.regenerate;
       break;
     default:
       return null;

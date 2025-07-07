@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Bot } from "lucide-react";
+import { useLocale } from "@/hooks/use-locale";
 
 interface ChatHeaderProps {
   status: "submitted" | "streaming" | "ready" | "error";
@@ -7,6 +8,8 @@ interface ChatHeaderProps {
 }
 
 const ChatHeader = memo(function ChatHeader({ status }: ChatHeaderProps) {
+  const { t } = useLocale();
+
   return (
     <div className="h-12 bg-white border-b border-gray-200 z-10">
       <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -18,25 +21,25 @@ const ChatHeader = memo(function ChatHeader({ status }: ChatHeaderProps) {
           {status === "submitted" && (
             <>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>等待回复...</span>
+              <span>{t.chat.waitingForReply}</span>
             </>
           )}
           {status === "streaming" && (
             <>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>正在回复...</span>
+              <span>{t.chat.replying}</span>
             </>
           )}
           {status === "ready" && (
             <>
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>在线</span>
+              <span>{t.chat.online}</span>
             </>
           )}
           {status === "error" && (
             <>
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span>错误</span>
+              <span>{t.chat.error}</span>
             </>
           )}
         </div>
