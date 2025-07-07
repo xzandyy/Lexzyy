@@ -21,8 +21,7 @@ const customStyle = {
 };
 
 export default function Highlight({ language, code }: { language: string | undefined; code: string | undefined }) {
-  const [hasRegistered, setHasRegistered] = useState(language ? lowlight.registered(language) : false);
-  const [notSupported, setNotSupported] = useState(false);
+  const [notSupported, setNotSupported] = useState(language ? !lowlight.registered(language) : true);
   const lines = useLines(code);
 
   useEffect(() => {
@@ -35,15 +34,12 @@ export default function Highlight({ language, code }: { language: string | undef
     if (loader) {
       loader().then((languageFn) => {
         lowlight.register(language, languageFn.default);
-        setHasRegistered(true);
+        setNotSupported(false);
       });
-    } else {
-      setNotSupported(true);
-      setHasRegistered(true);
     }
   }, [language]);
 
-  if (!language || !code || !hasRegistered) return null;
+  if (!code || !language) return null;
 
   return (
     <div className="my-4 rounded-lg overflow-x-auto">
