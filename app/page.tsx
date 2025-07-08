@@ -7,7 +7,7 @@ import ChatInput from "@/components/chat-input";
 import LeftSidebar from "@/components/left-sidebar";
 import ChatFlow from "@/components/chat-flow";
 import SettingsComponent from "@/components/settings";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import useChats from "@/hooks/use-chats";
 
 export default function Home() {
