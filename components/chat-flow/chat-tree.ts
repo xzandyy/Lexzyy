@@ -8,6 +8,8 @@ type ChatTreeData = {
   message: UIMessage;
 };
 
+export const messageThrottle = 33.3;
+
 const SUBMIT = 1 << 0;
 const AWAIT = 1 << 1;
 const STREAM = 1 << 2;
@@ -40,7 +42,7 @@ export default class ChatTree {
   flowEdges: Map<string, Edge> = new Map();
   updateFlags: number = 0;
   updateMessagesToShowAsSrc: boolean = true;
-  clickTimer: number | null = null;
+  lastSettleTime: number = 0;
 
   // output
   messagesToShow: UIMessage[] = [];
@@ -118,13 +120,19 @@ export default class ChatTree {
       } else if (this.newStatus === "ready") {
         // settle: streaming -> ready
         this.updateFlags |= SETTLE;
+        this.lastSettleTime = Date.now();
       }
     } else if (this.newStatus === "streaming") {
       // stream: streaming -> streaming
       this.updateFlags |= STREAM;
     } else if (this.oldSrcMessages !== this.newSrcMessages) {
-      // stage: setSrcMessages
-      this.updateFlags |= STAGE;
+      if (Date.now() - this.lastSettleTime < messageThrottle * 2) {
+        // status ready but streaming
+        this.updateFlags |= SETTLE;
+      } else {
+        // stage: setSrcMessages
+        this.updateFlags |= STAGE;
+      }
     }
 
     // b、activeNodeData

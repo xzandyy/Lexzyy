@@ -1,7 +1,7 @@
 import { useChat } from "@ai-sdk/react";
 import { ChatRequestOptions, UIMessage } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ChatTree from "@/components/chat-flow/chat-tree";
+import ChatTree, { messageThrottle } from "@/components/chat-flow/chat-tree";
 import {
   DEFAULT_STYLE_CONFIG,
   EMPTY_ACTIVE_NODE_DATA,
@@ -32,7 +32,7 @@ export default function useChats() {
     reload,
   } = useChat({
     initialMessages: [systemMessage],
-    experimental_throttle: 33.3,
+    experimental_throttle: messageThrottle,
   });
 
   const handleInputChange = useStableCallback(_handleInputChange);
