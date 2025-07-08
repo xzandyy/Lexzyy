@@ -19,6 +19,11 @@ export const emptyDictionary = {
     selectLanguage: "",
     currentLanguage: "",
     noOptions: "",
+    theme: "",
+    currentTheme: "",
+    lightTheme: "",
+    darkTheme: "",
+    systemTheme: "",
   },
   chat: {
     input: "",

@@ -21,6 +21,11 @@ const dictionary: Dictionary = {
     selectLanguage: "选择语言",
     currentLanguage: "当前语言",
     noOptions: "暂无设置选项",
+    theme: "主题设置",
+    currentTheme: "当前主题",
+    lightTheme: "浅色",
+    darkTheme: "深色",
+    systemTheme: "跟随系统",
   },
   chat: {
     input: "输入",

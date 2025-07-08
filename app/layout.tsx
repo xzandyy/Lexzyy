@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "@xyflow/react/dist/style.css";
 import "./globals.css";
 import QueryProvider from "@/components/providers/query-provider";
+import ThemeProvider from "@/components/providers/theme-provider";
 import { Toaster } from "react-hot-toast";
 import Hydration from "@/components/hydration";
 
@@ -26,21 +27,25 @@ export default function RootLayout({
   return (
     <html>
       <body className={`${inter.variable} antialiased overflow-hidden`}>
-        <QueryProvider>
-          <Hydration>{children}</Hydration>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                background: "#363636",
-                color: "#fff",
-                fontSize: "14px",
-                borderRadius: "8px",
-              },
-            }}
-          />
-        </QueryProvider>
+        <Hydration>
+          <QueryProvider>
+            <ThemeProvider>
+              {children}
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: "#363636",
+                    color: "#fff",
+                    fontSize: "14px",
+                    borderRadius: "8px",
+                  },
+                }}
+              />
+            </ThemeProvider>
+          </QueryProvider>
+        </Hydration>
       </body>
     </html>
   );
