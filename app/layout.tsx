@@ -4,6 +4,7 @@ import "@xyflow/react/dist/style.css";
 import "./globals.css";
 import QueryProvider from "@/components/providers/query-provider";
 import { Toaster } from "react-hot-toast";
+import Hydration from "@/components/hydration";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -23,10 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html>
       <body className={`${inter.variable} antialiased overflow-hidden`}>
         <QueryProvider>
-          {children}
+          <Hydration>{children}</Hydration>
           <Toaster
             position="top-right"
             toastOptions={{

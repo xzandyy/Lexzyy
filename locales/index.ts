@@ -1,132 +1,133 @@
-export interface Dictionary {
+export const emptyDictionary = {
   common: {
-    loading: string;
-    error: string;
-    success: string;
-    confirm: string;
-    cancel: string;
-    save: string;
-    delete: string;
-    edit: string;
-    add: string;
-    search: string;
-    warning: string;
-    info: string;
-  };
+    loading: "",
+    error: "",
+    success: "",
+    confirm: "",
+    cancel: "",
+    save: "",
+    delete: "",
+    edit: "",
+    add: "",
+    search: "",
+    warning: "",
+    info: "",
+  },
   settings: {
-    title: string;
-    language: string;
-    selectLanguage: string;
-    currentLanguage: string;
-    noOptions: string;
-  };
+    title: "",
+    language: "",
+    selectLanguage: "",
+    currentLanguage: "",
+    noOptions: "",
+  },
   chat: {
-    input: string;
-    send: string;
-    stop: string;
-    reload: string;
-    empty: string;
-    error: string;
-    placeholder: string;
-    sendMessage: string;
-    stopGeneration: string;
-    regenerate: string;
-    addAttachment: string;
-    dragDropFiles: string;
-    dragDropDescription: string;
-    clearAllFiles: string;
-    processingFiles: string;
-    retry: string;
-    unsupportedFileType: string;
-    processingFailed: string;
-    retryFailed: string;
-    waitingForReply: string;
-    replying: string;
-    online: string;
-  };
+    input: "",
+    send: "",
+    stop: "",
+    reload: "",
+    empty: "",
+    error: "",
+    placeholder: "",
+    sendMessage: "",
+    stopGeneration: "",
+    regenerate: "",
+    addAttachment: "",
+    dragDropFiles: "",
+    dragDropDescription: "",
+    clearAllFiles: "",
+    processingFiles: "",
+    retry: "",
+    unsupportedFileType: "",
+    processingFailed: "",
+    retryFailed: "",
+    waitingForReply: "",
+    replying: "",
+    online: "",
+  },
   flow: {
-    locate: string;
-    style: string;
-    styleConfig: string;
-    resetToDefault: string;
-    nodeSize: string;
-    layoutSpacing: string;
-    typography: string;
-    edgeStyle: string;
-    width: string;
-    height: string;
-    horizontalSpacing: string;
-    verticalSpacing: string;
-    fontSize: string;
-    lineHeight: string;
-    maxCharacters: string;
-    edgeWidth: string;
-    edgeType: string;
-    edgeAnimated: string;
-    default: string;
-    bezierCurve: string;
-    straight: string;
-    step: string;
-    smoothStep: string;
-    title: string;
-  };
+    locate: "",
+    style: "",
+    styleConfig: "",
+    resetToDefault: "",
+    nodeSize: "",
+    layoutSpacing: "",
+    typography: "",
+    edgeStyle: "",
+    width: "",
+    height: "",
+    horizontalSpacing: "",
+    verticalSpacing: "",
+    fontSize: "",
+    lineHeight: "",
+    maxCharacters: "",
+    edgeWidth: "",
+    edgeType: "",
+    edgeAnimated: "",
+    default: "",
+    bezierCurve: "",
+    straight: "",
+    step: "",
+    smoothStep: "",
+    title: "",
+  },
   list: {
-    startNewChat: string;
-    chatDescription: string;
-    errorOccurred: string;
-    unknownError: string;
-  };
+    startNewChat: "",
+    chatDescription: "",
+    errorOccurred: "",
+    unknownError: "",
+  },
   markdown: {
-    loadingChart: string;
-  };
+    loadingChart: "",
+  },
   documents: {
-    pdfDocument: string;
-    wordDocument: string;
-    wordDocumentDocx: string;
-    wordDocumentDoc: string;
-    excelWorkbook: string;
-    excelWorkbookXlsx: string;
-    excelWorkbookXls: string;
-    powerpointPresentation: string;
-    powerpointPresentationPptx: string;
-    powerpointPresentationPpt: string;
-    xmlDocument: string;
-    xmlDocumentXml: string;
-    jsonDataFile: string;
-    jsonDataFileJson: string;
-    xhtmlDocument: string;
-    xhtmlDocumentXhtml: string;
-    latexDocument: string;
-    latexDocumentTex: string;
-    texDocument: string;
-    texDocumentTex: string;
-    yamlConfigFile: string;
-    yamlConfigFileYml: string;
-    yamlConfigFileYaml: string;
-    yamlConfigFileYmlYaml: string;
-    rssFeed: string;
-    rssFeedRss: string;
-    atomFeed: string;
-    atomFeedAtom: string;
-  };
+    pdfDocument: "",
+    wordDocument: "",
+    wordDocumentDocx: "",
+    wordDocumentDoc: "",
+    excelWorkbook: "",
+    excelWorkbookXlsx: "",
+    excelWorkbookXls: "",
+    powerpointPresentation: "",
+    powerpointPresentationPptx: "",
+    powerpointPresentationPpt: "",
+    xmlDocument: "",
+    xmlDocumentXml: "",
+    jsonDataFile: "",
+    jsonDataFileJson: "",
+    xhtmlDocument: "",
+    xhtmlDocumentXhtml: "",
+    latexDocument: "",
+    latexDocumentTex: "",
+    texDocument: "",
+    texDocumentTex: "",
+    yamlConfigFile: "",
+    yamlConfigFileYml: "",
+    yamlConfigFileYaml: "",
+    yamlConfigFileYmlYaml: "",
+    rssFeed: "",
+    rssFeedRss: "",
+    atomFeed: "",
+    atomFeedAtom: "",
+  },
   sidebar: {
-    expandCollapse: string;
-  };
+    expandCollapse: "",
+  },
   attachment: {
-    attachment: string;
-    downloadFile: string;
-  };
+    attachment: "",
+    downloadFile: "",
+  },
   navigation: {
-    chatFlow: string;
-    settings: string;
-  };
-}
+    chatFlow: "",
+    settings: "",
+  },
+} as const;
 
 export const localeNames = {
   "zh-CN": "中文",
   "en-US": "English",
 } as const;
 
+export type Dictionary = typeof emptyDictionary;
 export type Locale = keyof typeof localeNames;
 
 export const defaultLocale: Locale = "zh-CN";

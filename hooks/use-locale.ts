@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useLocaleStore, initializeLocale } from "@/stores/locale-store";
-import zhCNDictionary from "@/locales/dictionaries/zh-CN";
+import { emptyDictionary } from "@/locales";
 
 export function useLocale() {
   const { locale, dictionary, setLocale, reset } = useLocaleStore();
@@ -10,7 +10,7 @@ export function useLocale() {
   }, []);
 
   const t = useMemo(() => {
-    return dictionary || zhCNDictionary;
+    return dictionary || emptyDictionary;
   }, [dictionary]);
 
   return {
