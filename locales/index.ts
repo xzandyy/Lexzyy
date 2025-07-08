@@ -127,7 +127,10 @@ export const localeNames = {
   "en-US": "English",
 } as const;
 
-export type Dictionary = typeof emptyDictionary;
+type StringifyValues<T> = {
+  [K in keyof T]: T[K] extends string ? string : T[K] extends object ? StringifyValues<T[K]> : T[K];
+};
+export type Dictionary = StringifyValues<typeof emptyDictionary>;
 export type Locale = keyof typeof localeNames;
 
 export const defaultLocale: Locale = "zh-CN";
