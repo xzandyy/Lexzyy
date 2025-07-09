@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,19 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { AutoFormProps, FieldConfig, InferFormData } from "./types";
-import {
-  AutoFormInput,
-  AutoFormTextarea,
-  AutoFormSelect,
-  AutoFormCheckbox,
-  AutoFormRadioGroup,
-  AutoFormSwitch,
-  AutoFormSlider,
-  AutoFormCalendar,
-  AutoFormInputOTP,
-  AutoFormToggle,
-  AutoFormToggleGroup,
-} from "./fields";
+import { getLazyFieldComponent } from "./fields/lazy-registry";
+
+function FieldLoadingFallback({ label }: { label?: string }) {
+  return (
+    <div className="space-y-2">
+      {label && <div className="h-5 w-20 bg-gray-200/60 rounded animate-pulse"></div>}
+      <div className="h-10 w-full bg-gray-200/60 rounded animate-pulse"></div>
+      <div className="h-4 w-0"></div>
+    </div>
+  );
+}
 
 function renderField(fieldName: string, fieldConfig: FieldConfig, control: any, required: boolean) {
   if (fieldConfig.hidden) return null;
@@ -37,38 +35,31 @@ function renderField(fieldName: string, fieldConfig: FieldConfig, control: any, 
     disabled,
   };
 
-  switch (type) {
-    case "input":
-    case "email":
-    case "password":
-    case "number":
-    case "tel":
-    case "url":
-      return <AutoFormInput key={fieldName} {...commonProps} type={type} />;
-    case "textarea":
-      return <AutoFormTextarea key={fieldName} {...commonProps} />;
-    case "select":
-      return <AutoFormSelect key={fieldName} {...commonProps} options={options} />;
-    case "checkbox":
-      return <AutoFormCheckbox key={fieldName} {...commonProps} />;
-    case "radio":
-      return <AutoFormRadioGroup key={fieldName} {...commonProps} options={options} />;
-    case "switch":
-      return <AutoFormSwitch key={fieldName} {...commonProps} />;
-    case "slider":
-      return <AutoFormSlider key={fieldName} {...commonProps} />;
-    case "calendar":
-    case "date":
-      return <AutoFormCalendar key={fieldName} {...commonProps} />;
-    case "input-otp":
-      return <AutoFormInputOTP key={fieldName} {...commonProps} />;
-    case "toggle":
-      return <AutoFormToggle key={fieldName} {...commonProps} />;
-    case "toggle-group":
-      return <AutoFormToggleGroup key={fieldName} {...commonProps} options={options} />;
-    default:
-      return <AutoFormInput key={fieldName} {...commonProps} />;
-  }
+  const LazyFieldComponent = getLazyFieldComponent(type);
+
+  const getFieldSpecificProps = () => {
+    switch (type) {
+      case "input":
+      case "email":
+      case "password":
+      case "number":
+      case "tel":
+      case "url":
+        return { ...commonProps, type };
+      case "select":
+      case "radio":
+      case "toggle-group":
+        return { ...commonProps, options };
+      default:
+        return commonProps;
+    }
+  };
+
+  return (
+    <Suspense key={fieldName} fallback={<FieldLoadingFallback label={label} />}>
+      <LazyFieldComponent {...getFieldSpecificProps()} />
+    </Suspense>
+  );
 }
 
 function buildSchemaFromConfig(config: { fields: Record<string, FieldConfig> }) {
@@ -167,6 +158,5 @@ export function AutoForm<T extends Record<string, FieldConfig>>({
   );
 }
 
-// 导出所有相关类型和组件
 export * from "./types";
 export * from "./fields";
