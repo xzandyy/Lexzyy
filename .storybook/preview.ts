@@ -1,4 +1,5 @@
 import type { Preview } from "@storybook/nextjs-vite";
+import "../app/globals.css";
 
 const preview: Preview = {
   parameters: {
@@ -14,6 +15,12 @@ const preview: Preview = {
       // 'error' - fail CI on a11y violations
       // 'off' - skip a11y checks entirely
       test: "todo",
+    },
+
+    // 设置更宽的展示区域
+    layout: "padded",
+    viewport: {
+      defaultViewport: "desktop",
     },
   },
 };
