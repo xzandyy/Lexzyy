@@ -2,7 +2,7 @@ import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText } from "lucide-react";
 import useDragDropFiles from "@/hooks/use-drag-drop-files";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 
 interface DragDropOverlayProps {
   onFilesDrop: (files: FileList) => void;

@@ -4,7 +4,7 @@ import { Palette, Crosshair } from "lucide-react";
 import { nodeTypes } from "./chat-node";
 import { StyleConfigPanel } from "./style-config-panel";
 import { Button, PanelHeader } from "@/components/common";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import type { StyleConfig } from "./types";
 import { DEFAULT_STYLE_CONFIG } from "./types";
 import "@xyflow/react/dist/style.css";

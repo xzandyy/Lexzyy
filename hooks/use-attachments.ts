@@ -1,6 +1,6 @@
 import { ChatAttachment, FileStatus, isFileSupported, processFile } from "@/lib/file-utils";
 import { useCallback, useState } from "react";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import toast from "react-hot-toast";
 
 export default function useAttachments() {

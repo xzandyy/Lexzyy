@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Loader2 } from "lucide-react";
 import { ChatAttachment } from "@/lib/file-utils";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import FileItem from "./file-item";
 
 interface FilePreviewProps {

@@ -2,7 +2,7 @@ import { LucideIcon, Menu } from "lucide-react";
 import { ReactNode, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { KeepAlive } from "@/components/common";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import TabButton from "./tab-button";
 
 export interface LeftSidebarProps {

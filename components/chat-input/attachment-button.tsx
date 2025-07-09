@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Paperclip } from "lucide-react";
 import useInputFile from "@/hooks/use-input-file";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 
 interface AttachmentButtonProps {
   onFilesSelect: (files: FileList) => void;

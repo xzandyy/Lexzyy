@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from "react";
 import { X, RotateCcw } from "lucide-react";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import { DEFAULT_STYLE_CONFIG, StyleConfig, useStyleConfigOptions, useConfigGroups } from "./types";
 
 const ConfigSlider = memo<{

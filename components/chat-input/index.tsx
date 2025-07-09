@@ -6,7 +6,7 @@ import AttachmentButton from "./attachment-button";
 import DragDropOverlay from "./drag-drop-overlay";
 import useAttachments from "@/hooks/use-attachments";
 import useInputText from "@/hooks/use-input-text";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import { ChatRequestOptions } from "ai";
 
 interface ChatInputProps {

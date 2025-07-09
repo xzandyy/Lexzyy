@@ -1,5 +1,5 @@
 import { UIMessage } from "ai";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 
 export type FlowNodeHandlers = {
   onNodeClick: (id: string, index: number) => void;

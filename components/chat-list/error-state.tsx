@@ -1,5 +1,5 @@
 import { AlertCircle } from "lucide-react";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 
 interface ErrorStateProps {
   error: Error;

@@ -1,6 +1,6 @@
 import { X, FileText, Loader2, AlertCircle } from "lucide-react";
 import { ChatAttachment } from "@/lib/file-utils";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 
 function formatFileSize(bytes: number) {
   if (bytes === 0) return "0 B";

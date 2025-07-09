@@ -1,6 +1,6 @@
 import { Suspense, memo } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import mermaid from "mermaid";
 
 mermaid.initialize({

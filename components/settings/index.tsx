@@ -1,6 +1,6 @@
 import React from "react";
 import { PanelHeader } from "@/components/common";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 import { localeNames, getSupportedLocales } from "@/locales";
 import type { Locale } from "@/locales";
 import { useThemeStore } from "@/stores/theme-store";

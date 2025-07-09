@@ -2,7 +2,7 @@ import type { Attachment } from "ai";
 import { FileText, Download } from "lucide-react";
 import Image from "next/image";
 import { memo } from "react";
-import { useLocale } from "@/hooks/use-locale";
+import useLocale from "@/hooks/use-locale";
 
 const AttachmentRenderer = memo(function AttachmentRenderer({ attachments }: { attachments?: Attachment[] }) {
   const { t } = useLocale();
