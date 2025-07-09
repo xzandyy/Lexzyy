@@ -62,6 +62,27 @@ export class Tree<T = unknown> {
   }
 
   /**
+   * 替换已存在的节点
+   */
+  replaceNode(replaceId: string, newId: string, data: T): TreeNode<T> {
+    const oldNode = this.nodeMap.get(replaceId);
+    if (!oldNode) {
+      throw new Error(`要替换的节点 ${replaceId} 不存在`);
+    }
+
+    const parent = oldNode.parent as TreeNode<T>;
+    const newNode = new TreeNode(newId, data, parent);
+
+    const oldNodeIndex = parent.children.findIndex((child) => child.id === replaceId);
+    this.removeNodeFromMap(oldNode);
+
+    parent.children[oldNodeIndex] = newNode;
+    this.nodeMap.set(newId, newNode);
+
+    return newNode;
+  }
+
+  /**
    * 获取节点
    */
   getNode(nodeId: string): TreeNode<T> | undefined {

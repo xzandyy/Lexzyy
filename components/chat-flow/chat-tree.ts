@@ -19,9 +19,12 @@ const ACTIVATE = 1 << 5;
 const JUMP_NODE = 1 << 6;
 const JUMP_FORK = 1 << 7;
 const RESTYLE = 1 << 8;
+const CHANGE_ID = 1 << 9;
 const SUBMIT_AWAIT = SUBMIT | AWAIT;
 const SUBMIT_AWAIT_SETTLE_STREAM = SUBMIT | AWAIT | SETTLE | STREAM;
-const SUBMIT_AWAIT_SETTLE_STREAM_ACTIVATE_RESTYLE = SUBMIT | AWAIT | SETTLE | STREAM | ACTIVATE | RESTYLE;
+const SUBMIT_AWAIT_SETTLE_STREAM_ACTIVATE_RESTYLE_CHANGE_ID =
+  SUBMIT | AWAIT | SETTLE | STREAM | ACTIVATE | RESTYLE | CHANGE_ID;
+const AWAIT_SETTLE_STREAM = AWAIT | SETTLE | STREAM;
 
 export default class ChatTree {
   // input
@@ -43,6 +46,8 @@ export default class ChatTree {
   updateFlags: number = 0;
   updateMessagesToShowAsSrc: boolean = true;
   lastSettleTime: number = 0;
+  oldStreamMessageId: string | undefined = undefined;
+  newStreamMessageId: string | undefined = undefined;
 
   // output
   messagesToShow: UIMessage[] = [];
@@ -153,9 +158,34 @@ export default class ChatTree {
       this.updateFlags |= RESTYLE;
     }
 
-    // 2、apply updates //
+    // 2、updates to updates //
+
+    // a、change_id
+    if (this.updateFlags & SUBMIT) {
+      this.oldStreamMessageId = undefined;
+      this.newStreamMessageId = undefined;
+    }
+
+    if (this.updateFlags & AWAIT_SETTLE_STREAM) {
+      const lastMessage = this.newSrcMessages.at(-1)!;
+      if (this.newStreamMessageId && this.newStreamMessageId !== lastMessage.id) {
+        this.updateFlags |= CHANGE_ID;
+        this.oldStreamMessageId = this.newStreamMessageId;
+        this.newStreamMessageId = lastMessage.id;
+      }
+      if (lastMessage.role === "assistant") {
+        this.newStreamMessageId = lastMessage.id;
+      }
+    }
+
+    // 3、apply updates //
 
     // a、update tree //
+
+    // change_id
+    if (this.updateFlags & CHANGE_ID) {
+      this.replaceNode(this.oldStreamMessageId!, this.newSrcMessages.at(-1)!);
+    }
 
     // submit/await
     if (this.updateFlags & SUBMIT_AWAIT) {
@@ -171,6 +201,46 @@ export default class ChatTree {
     }
 
     // b、update element //
+
+    // change_id
+    if (this.updateFlags & CHANGE_ID) {
+      const oldId = this.oldStreamMessageId!;
+      const newId = this.newStreamMessageId!;
+      // elements
+
+      const oldFlowNode = this.flowNodes.get(oldId)!;
+      const oldFlowEdge = this.flowEdges.get(oldId)!;
+
+      this.flowNodes.set(newId, {
+        ...oldFlowNode,
+        id: newId,
+        data: {
+          ...oldFlowNode.data,
+          label: "",
+          message: this.newSrcMessages.at(-1)!,
+        },
+      });
+      this.flowEdges.set(newId, {
+        ...oldFlowEdge,
+        id: `${oldFlowEdge.source}-${newId}`,
+        target: newId,
+      });
+      this.flowNodes.delete(oldId);
+      this.flowEdges.delete(oldId);
+
+      // subtreeWidths
+      const oldWidth = this.subtreeWidths.get(oldId)!;
+      this.subtreeWidths.set(newId, oldWidth);
+      this.subtreeWidths.delete(oldId);
+
+      // activeNodeData
+      if (this.oldActiveNodeData.id === oldId) {
+        this.oldActiveNodeData.id = newId;
+      }
+      if (this.newActiveNodeData.id === oldId) {
+        this.newActiveNodeData.id = newId;
+      }
+    }
 
     // submit/await
     if (this.updateFlags & SUBMIT_AWAIT) {
@@ -224,7 +294,7 @@ export default class ChatTree {
           });
 
           if (parentId) {
-            this.flowEdges.set(`${parentId}-${nodeId}`, {
+            this.flowEdges.set(nodeId, {
               id: `${parentId}-${nodeId}`,
               source: parentId,
               target: nodeId,
@@ -266,7 +336,7 @@ export default class ChatTree {
           },
         });
 
-        this.flowEdges.set(edgeId, {
+        this.flowEdges.set(id, {
           id: edgeId,
           source: parentNode.id,
           target: id,
@@ -279,9 +349,8 @@ export default class ChatTree {
     // settle
     if (this.updateFlags & SETTLE) {
       const message = this.newSrcMessages.at(-1)!;
-      const parentMessage = this.newSrcMessages.at(-2)!;
       const flowNode = this.flowNodes.get(message.id)!;
-      const flowEdge = this.flowEdges.get(`${parentMessage.id}-${message.id}`)!;
+      const flowEdge = this.flowEdges.get(message.id)!;
 
       this.flowNodes.set(flowNode.id, {
         ...flowNode,
@@ -293,7 +362,7 @@ export default class ChatTree {
         },
       });
 
-      this.flowEdges.set(flowEdge.id, {
+      this.flowEdges.set(flowNode.id, {
         ...flowEdge,
         animated: styleConfig.edgeAnimated,
       });
@@ -354,7 +423,7 @@ export default class ChatTree {
       }
     }
     // renew when submit/await/settle/activate/restyle
-    if (this.updateFlags & SUBMIT_AWAIT_SETTLE_STREAM_ACTIVATE_RESTYLE) {
+    if (this.updateFlags & SUBMIT_AWAIT_SETTLE_STREAM_ACTIVATE_RESTYLE_CHANGE_ID) {
       this.renewFlowElements();
     }
 
@@ -480,6 +549,10 @@ export default class ChatTree {
 
   private setNode(message: UIMessage, parentId?: string): void {
     this.tree.setNode(message.id, { message }, parentId);
+  }
+
+  private replaceNode(replaceId: string, message: UIMessage): void {
+    this.tree.replaceNode(replaceId, message.id, { message });
   }
 
   private getNode(messageId: string): TreeNode<ChatTreeData> | undefined {
