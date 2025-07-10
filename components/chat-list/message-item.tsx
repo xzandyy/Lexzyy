@@ -1,4 +1,4 @@
-import { MarkdownRenderer, AttachmentRenderer, PlainTextRenderer } from "@/components/renderers";
+import { MarkdownRenderer, AttachmentRenderer, PlainTextRenderer, PluginRenderer } from "@/components/renderers";
 import { UIMessage } from "ai";
 import { memo } from "react";
 
@@ -19,9 +19,13 @@ const MessageItem = memo(function MessageItem({ message }: MessageItemProps) {
   }
 
   if (message.role === "assistant") {
+    const toolInvocations =
+      message.parts?.filter((part) => part.type === "tool-invocation").map((part) => part.toolInvocation) || [];
+
     return (
       <div className="flex justify-start min-h-13">
         <div className="max-w-full min-w-0 overflow-hidden flex-1 py-3">
+          <PluginRenderer toolInvocations={toolInvocations} />
           <MarkdownRenderer preset="chat-message" uid={message.id}>
             {message.content}
           </MarkdownRenderer>

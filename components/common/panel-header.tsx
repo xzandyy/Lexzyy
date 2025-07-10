@@ -1,7 +1,7 @@
 import React from "react";
 
 interface PanelHeaderProps {
-  label: string;
+  label: React.ReactNode;
   children?: React.ReactNode;
 }
 

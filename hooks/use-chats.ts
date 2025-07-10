@@ -9,6 +9,7 @@ import {
   StyleConfig,
   ActiveWay,
 } from "@/components/chat-flow/types";
+import usePlugin from "./use-plugin";
 import useStableCallback from "./use-stable-callback";
 
 function createSystemMessage(content: string) {
@@ -21,6 +22,7 @@ function createSystemMessage(content: string) {
 
 export default function useChats() {
   const systemMessage = createSystemMessage("你是一个AI助手");
+  const plugin = usePlugin();
   const {
     status,
     error,
@@ -152,9 +154,19 @@ export default function useChats() {
   const handleSubmit = useCallback(
     (chatRequestOptions?: ChatRequestOptions) => {
       setSrcMessages((prev) => (prev === flow.current.messagesToShow ? [...prev] : flow.current.messagesToShow));
-      setPendingSubmit(chatRequestOptions || {});
+
+      const pluginConfigs = plugin.getEnabledPluginConfigs();
+      const enhancedOptions: ChatRequestOptions = {
+        ...chatRequestOptions,
+        body: {
+          ...chatRequestOptions?.body,
+          pluginConfigs,
+        },
+      };
+
+      setPendingSubmit(enhancedOptions);
     },
-    [setSrcMessages],
+    [setSrcMessages, plugin],
   );
 
   useEffect(() => {
@@ -167,17 +179,25 @@ export default function useChats() {
 
   return {
     status,
-    handleInputChange,
-    handleSubmit,
-    stop,
-    reload,
-    messagesToShow: flow.current.messagesToShow,
     error,
-    addMessageRefs,
-    handleScrollActiveChange,
-    autoFitViewNode: flow.current.autoFitViewNode,
-    flowElements: flow.current.flowElements,
-    flowCSSVariables: flow.current.flowCSSVariables,
-    handleStyleConfigChange,
+    actions: {
+      handleInputChange,
+      handleSubmit,
+      stop,
+      reload,
+    },
+    list: {
+      messagesToShow: flow.current.messagesToShow,
+      addMessageRefs,
+      handleScrollActiveChange,
+    },
+    flow: {
+      autoFitViewNode: flow.current.autoFitViewNode,
+      nodes: flow.current.flowElements.nodes,
+      edges: flow.current.flowElements.edges,
+      flowCSSVariables: flow.current.flowCSSVariables,
+      handleStyleConfigChange,
+    },
+    plugin,
   };
 }
